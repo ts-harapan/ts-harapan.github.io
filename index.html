@@ -38,15 +38,19 @@ body.compact #app{gap:0;padding:0}
 body.compact #panel{position:fixed;right:0;top:0;bottom:0;height:auto!important;border-width:0 0 0 4px;box-shadow:none;z-index:30;transform:translateX(100%);transition:transform .2s;justify-content:flex-start}
 body.compact #panel.open{transform:none}
 body.compact #hud{display:flex}
-body.portrait #app{flex-direction:column;justify-content:flex-start;padding-top:6px}
-body.portrait #joy{position:fixed;left:18px;bottom:calc(18px + env(safe-area-inset-bottom,0px))}
-body.portrait #ab{position:fixed;right:22px;bottom:calc(34px + env(safe-area-inset-bottom,0px))}
-body.portrait #wrap{box-shadow:0 0 0 3px #000}
+body.portrait #app{flex-direction:column;justify-content:flex-start;padding:0;gap:0}
+body.portrait #game{width:100%;height:100%}
+body.portrait #wrap{border:0;box-shadow:none}
+body.portrait #joy{position:absolute;left:16px;bottom:calc(22px + env(safe-area-inset-bottom,0px));background:rgba(255,255,255,.26);border-color:rgba(255,255,255,.6)}
+body.portrait #knob{background:rgba(255,255,255,.72)}
+body.portrait #ab{position:absolute;right:20px;bottom:calc(40px + env(safe-area-inset-bottom,0px));background:rgba(224,74,58,.8);border-color:rgba(255,255,255,.7)}
+body.portrait #dlg{bottom:auto;top:44px}
+#hud .hq{display:flex;gap:4px;align-items:center}#hud .hq button{font-size:12px;padding:3px 6px}
 </style></head>
 <body><div id="app">
 <div id="game"><div id="wrap">
  <canvas id="c" width="768" height="428"></canvas>
- <div id="hud"><span id="hl">LV31 Ecologist</span><span id="hs"></span><button id="menu" style="padding:3px 6px">☰</button></div>
+ <div id="hud"><span id="hl">LV31 Ecologist</span><span id="hs"></span><span class="hq"><button aria-label="Field Notebook" onclick="notebook()">📓</button><button aria-label="Collaborate" onclick="collab()">✉</button><button class="alt" aria-label="Classic view" onclick="classic()">ℹ</button><button id="menu" style="padding:3px 6px">☰</button></span></div>
  <div id="dlg"></div><div id="joy"><div id="knob"></div></div><button id="ab">A</button>
  <div id="title"><div class="in"><h1>DR. HARAPAN’S FIELD QUEST</h1>
   <p>Walk around the forest and meet 5 species. Find 2 donor chests. Press A (or Space) near something to interact.</p>
@@ -202,9 +206,9 @@ let VW=384,S=2,cam=0;
 function layout(){const iw=innerWidth,ih=innerHeight,dpr=Math.min(window.devicePixelRatio||1,3),portrait=ih>iw*1.1&&iw<=900,compact=iw<=760||portrait;
  document.body.classList.toggle('portrait',portrait);document.body.classList.toggle('compact',compact);
  const wr=$('wrap'),pn=$('panel');let cw,ch;
- if(portrait){const ctl=Math.min(200,ih*.27);cw=iw-8;ch=Math.max(120,ih-ctl-22);VW=Math.min(384,214*cw/ch);if(VW>=384){VW=384;ch=cw*214/384}}
+ if(portrait){cw=iw;ch=ih;VW=Math.min(384,214*cw/ch)}
  else{const availW=iw-16-(compact?0:242),availH=ih-24;cw=Math.min(availW,availH*384/214);ch=cw*214/384;VW=384;cw-=8;ch-=8;if(cw<100){cw=iw-8;ch=cw*214/384}}
- wr.style.width=(cw+8)+'px';wr.style.height=(ch+8)+'px';wr.style.aspectRatio='auto';
+ const pad=portrait?0:8;wr.style.width=(cw+pad)+'px';wr.style.height=(ch+pad)+'px';wr.style.aspectRatio='auto';
  if(!compact)pn.style.height=(ch+8)+'px';else pn.style.height='';
  const c=$('c');c.width=Math.round(cw*dpr);c.height=Math.round(ch*dpr);S=c.width/VW;
  X.imageSmoothingEnabled=true;X.imageSmoothingQuality='high'}
