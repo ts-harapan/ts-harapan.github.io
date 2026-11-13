@@ -370,24 +370,11 @@ function eleWalk(dt){const e=E.find(q=>q.k=='ele');if(!e||ELW!=1)return;ES+=dt*9
  e.x=a[0]+(b[0]-a[0])*f;e.y=a[1]+(b[1]-a[1])*f;e.flip=0;if(ES>=L){ES=L;ELW=2}}
 
 // ---- poacher hiding in the bush: steps out, then runs away if you call the police ----
-const PO={p:0,go:0,run:0,gone:0,x:349,y:150};
-function pbody(cx,fy,flip,fr,al){X.save();X.globalAlpha=al;X.translate(cx,fy);X.scale(flip?-.5:.5,.5);
- const R=(x,y,w,h,c)=>{X.fillStyle=c;X.fillRect(x,y,w,h)},K='#17200f';
- const l=fr?2:0,r=fr?0:2;
- R(-8,-18-l,7,18+l,K);R(1,-18-r,7,18+r,K);R(-7,-17-l,5,13,'#5c5a3a');R(2,-17-r,5,13,'#5c5a3a');R(-7,-5-l,5,5+l,'#2b2018');R(2,-5-r,5,5+r,'#2b2018');
- R(-9,-38,18,22,K);R(-8,-37,16,20,'#556b3d');R(-8,-37,4,20,'#6b8450');R(4,-37,4,20,'#3b4d2c');R(-8,-20,16,3,'#3d3b26');R(-1,-37,2,17,'#3b4d2c');
- R(-12,-37,4,16,K);R(-11,-36,2,14,'#556b3d');R(-11,-22,2,2,'#c98f68');R(8,-37,4,16,K);R(9,-36,2,14,'#3b4d2c');R(9,-22,2,2,'#c98f68');
- R(-11,-44,3,26,'#2a2118');R(-12,-52,5,9,'#6b4a2a');
- const q=SPR.hunter;X.drawImage(AT,q[0]+5,q[1],q[2]-8,31,-12.5,-56,25,19.5);
- X.restore()}
-function drawPO(){if(PO.gone)return;if(PO.p<=0&&!PO.run)return sp('hunter',349,150);
- const mv=PO.run||(PO.go?PO.p<1:PO.p>0),a=PO.run&&PO.x>378?Math.max(0,(396-PO.x)/18):1;pbody(PO.x,PO.y,0,mv?fr(8,2):0,a)}
-function poAsk(){PO.go=1;E.find(e=>e.t=='p').y=PO.y;
- say('Poacher',[['A','Rhino horn pays more than a year of farming.'],['S','Say less. Call the police?']],()=>{if(!PO.run)PO.go=0},'<button onclick="poCall(1)">Yes</button><button class="alt" onclick="poCall(0)">No</button>',null,1)}
-function poCall(y){if(!D)return;$('dlg').style.display='none';D=null;if(y){PO.run=1;PO.go=1;sfx('siren')}else PO.go=0}
-function poUpd(dt){if(PO.gone)return;
- if(PO.run){PO.x+=dt*46;PO.y+=dt*3;if(PO.x>398){PO.gone=1;const e=E.find(q=>q.t=='p');if(e)e.gone=1}return}
- PO.p=Math.max(0,Math.min(1,PO.p+(PO.go?1:-1)*dt*2.2));PO.x=349+(345-349)*PO.p;PO.y=150+(163-150)*PO.p}
+const PO={run:0,gone:0,f:0};
+function drawPO(){if(PO.gone)return;sp('hunter',349,150,0,PO.run?Math.max(0,1-PO.f):1)}
+function poAsk(){say('Poacher',[['A','Rhino horn pays more than a year of farming.'],['S','Say less. Call the police?']],null,'<button onclick="poCall(1)">Yes</button><button class="alt" onclick="poCall(0)">No</button>',null,1)}
+function poCall(y){if(!D)return;$('dlg').style.display='none';D=null;if(y){PO.run=1;sfx('siren')}}
+function poUpd(dt){if(PO.gone||!PO.run)return;PO.f+=dt*1.6;if(PO.f>=1){PO.gone=1;const e=E.find(q=>q.t=='p');if(e)e.gone=1}}
 function loop(ts){requestAnimationFrame(loop);const dt=Math.min(.05,(ts-last)/1000||0);last=ts;t=ts/1000;if(SEED.on){SEED.t+=dt;const ss=seedStage();if(ss!=SEED.ls){if(SEED.ls&&ss!='plant')sfx(ss=='land'?'plop':'chime');SEED.ls=ss}}
  if(started&&!D&&P.mv&&(FS-=dt)<=0){FS=.3;sfx('step')}
  if(AC&&started){const mo=$('modal').style.display=='flex';if(mo&&AC.state=='running')AC.suspend();else if(!mo&&AC.state=='suspended')AC.resume()}if(SW>=0){SW+=dt;if(SW>=.2&&!SWH){SWH=1;hitBreak()}}else SWH=0;BR.forEach(b=>{if(b.st>0&&b.st<3){b.t+=dt;if(b.st==1&&b.t>.16)b.st=2;else if(b.st==2&&b.t>.5){b.st=3;sfx('release')}}});
@@ -400,7 +387,7 @@ function loop(ts){requestAnimationFrame(loop);const dt=Math.min(.05,(ts-last)/10
  {const tg=Math.max(0,Math.min(W-VW,P.x-VW/2));cam=VW>=W?0:(Math.abs(cam-tg)>60?tg:cam+(tg-cam)*Math.min(1,dt*8))}X.setTransform(S,0,0,S,-cam*S,VY*S);if(VY>0){X.save();X.scale(1,-1);X.drawImage(bg,0,0,W,H);X.restore();X.save();X.translate(0,2*H);X.scale(1,-1);X.drawImage(bg,0,0,W,H);X.restore();X.fillStyle='rgba(8,14,10,.38)';X.fillRect(0,-VY-2,W,VY+2);X.fillRect(0,H,W,VY+2)}X.drawImage(bg,0,0,W,H);PLOT.forEach(q=>{const s=SPR[q[0]];X.drawImage(AT,s[0],s[1],s[2],s[3],q[1],q[2],16,16)});if(FR.complete)FRU.forEach(f=>X.drawImage(FR,f[0]-f[2]/2,f[1]-f[2]*1.05,f[2],f[2]*1.05));X.textAlign='center';X.textBaseline='middle';
  X.fillStyle='#fff';X.font='8px "Press Start 2P",monospace';
  const dr=[];
- DEC.forEach(d=>dr.push([d[2],()=>{const f=d[0];sp(f[fr(d[3]||1,f.length,d[4]||0)],d[1]+(f[0]=='bushR'?Math.sin(t*9)*.6:0),d[2])}]));
+ DEC.forEach(d=>dr.push([d[2],()=>{const f=d[0];sp(f[fr(d[3]||1,f.length,d[4]||0)],d[1]+(f[0]=='bushR'&&!PO.run?Math.sin(t*9)*.6:0),d[2])}]));
  E.forEach(e=>{if(e.t=='a'){const a=ANI[e.k],tt=e.k=='tort';if(!e.gone)dr.push([e.y+12,()=>sp(a[fr(tt?1.4:2,a.length,tt?0:e.x)],e.x,e.y+12,(tt&&e.dir<0)||e.flip,e.al==null?1:e.al)])}
   if(e.t=='d')dr.push([e.y+8,()=>{sp(e.dug?'cdug':'cmound',e.x,e.y+8);if(e.dug)sp('wig2',e.x+Math.sin(t*3)*1.6,e.y+3+Math.sin(t*7)*.6,fr(2.5,2)==1)}]);
   if(e.t=='c')dr.push([e.y+8,()=>{const o=chests.has(e.i);sp(o?'chestO':'chestC',e.x,e.y+8);if(!o)sp('spark',e.x+9,e.y-6+Math.sin(t*3+e.i)*1.5,0,.6+.4*Math.sin(t*5+e.i))}])});
@@ -408,7 +395,7 @@ function loop(ts){requestAnimationFrame(loop);const dt=Math.min(.05,(ts-last)/10
  BR.forEach(b=>dr.push([b.y,()=>drawBR(b)]));
  dr.push([SEED.y,drawSeed]);
  dr.push([132,()=>sp('fire'+(1+fr(8,4)),177,132)]);
- if(CAMP)dr.push([86,()=>sp('cam',191,86)]);dr.push([FY,fenceDraw]);if(!PO.gone)dr.push([PO.p>0||PO.run?PO.y:150,drawPO]);if(!CAMP&&started)dr.push([200,()=>sp('excl',191,60+Math.sin(t*6)*1.5)]);
+ if(CAMP)dr.push([86,()=>sp('cam',191,86)]);dr.push([FY,fenceDraw]);if(!PO.gone)dr.push([150,drawPO]);if(!CAMP&&started)dr.push([200,()=>sp('excl',191,60+Math.sin(t*6)*1.5)]);
  dr.push([P.y+2,drawP]);dr.sort((a,b)=>a[0]-b[0]).forEach(d=>d[1]());
  X.font='6px "Press Start 2P",monospace';X.fillStyle='#000';X.fillText('Harapan',P.x+.5,P.y-29.5);X.fillStyle='#fff';X.fillText('Harapan',P.x,P.y-30);
  const n=near();if(n&&!D&&started&&!(n.t=='m'&&!CAMP)){sp('excl',n.x,n.y-24+Math.sin(t*6)*1.5)}
