@@ -273,7 +273,7 @@ function layout(){const iw=innerWidth,ih=innerHeight,dpr=Math.min(window.deviceP
  document.body.classList.toggle('portrait',portrait);document.body.classList.toggle('compact',compact);
  const wr=$('wrap'),pn=$('panel');let cw,ch;
  if(portrait){cw=iw;ch=ih;VW=Math.min(384,214*iw/ih*1.25)}
- else{const availW=iw-16-(compact?0:242),availH=ih-24;cw=Math.min(availW,availH*384/214);ch=cw*214/384;VW=384;cw-=8;ch-=8;if(cw<100){cw=iw-8;ch=cw*214/384}}
+ else{const availW=iw-16-(compact?0:242),availH=ih-24;cw=Math.min(availW,availH*384/214);ch=cw*214/384;VW=384;cw-=8;ch-=8;if(cw<100){cw=iw-8;ch=cw*214/384}else{const k=Math.max(1,Math.floor(cw*dpr/384));cw=384*k/dpr;ch=214*k/dpr}}
  const pad=portrait?0:8;wr.style.width=(cw+pad)+'px';wr.style.height=(portrait?ih:ch+pad)+'px';wr.style.aspectRatio='auto';
  if(!compact)pn.style.height=(ch+8)+'px';else pn.style.height='';
  const c=$('c');c.width=Math.round(cw*dpr);c.height=Math.round(ch*dpr);S=c.width/VW;{const hp=42*dpr;VY=portrait?Math.max(0,(hp+(c.height-hp-214*S)/2)/S):0}
