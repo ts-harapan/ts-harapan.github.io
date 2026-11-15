@@ -479,4 +479,5 @@ function loop(ts){requestAnimationFrame(loop);const dt=Math.min(.05,(ts-last)/10
  const n=near();if(n&&!D&&started&&!RIDE&&!(n.t=='m'&&!CAMP)){sp('excl',n.x,n.y-24+Math.sin(t*6)*1.5)}
  if(fl>0){X.fillStyle='rgba(255,255,255,'+fl+')';X.fillRect(cam,0,VW,H);fl-=dt*2.5}}
 let _ld=0;const ready=()=>{if(++_ld==2){layout();hud();requestAnimationFrame(loop)}};addEventListener('resize',layout);addEventListener('orientationchange',()=>setTimeout(layout,150));AT.onload=ready;bg.onload=ready;
-</script></body></html>
+</script><script data-goatcounter="https://harapan.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</body></html>
