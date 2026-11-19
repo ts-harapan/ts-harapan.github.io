@@ -219,15 +219,16 @@ footer a{margin:0 10px}
 <video id="drone" muted loop playsinline autoplay preload="metadata"></video>
 <canvas id="aerial"></canvas>
 <div class="card">
-<h2>Contact me</h2>
+<h2 style="text-align:center">Contact me</h2>
 <form id="cf" autocomplete="off">
-<label for="n">Name</label><input id="n" required>
+<label for="t">To</label><input id="t" type="email" value="trysuryaharapan@gmail.com" required>
+<label for="n">Your name</label><input id="n" required>
 <label for="e">Email</label><input id="e" type="email" required>
 <label for="m">Message</label><textarea id="m" required></textarea>
 <button class="btn" type="submit">Send</button>
 </form>
 <div class="note" id="note"></div>
-<div class="addr">surya@xtbg.ac.cn<br>trysuryaharapan@gmail.com</div>
+<div class="addr">trysuryaharapan@gmail.com</div>
 </div>
 </section>
 
@@ -322,18 +323,18 @@ document.querySelectorAll('#nv a').forEach(a=>a.addEventListener('click',()=>{hd
 addEventListener('scroll',hdTone,{passive:true});addEventListener('resize',hdTone);hdTone();
 document.getElementById('cf').addEventListener('submit',function(e){
  e.preventDefault();
- const nm=document.getElementById('n').value,em=document.getElementById('e').value,ms=document.getElementById('m').value,note=document.getElementById('note');
+ const to=document.getElementById('t').value||'trysuryaharapan@gmail.com',nm=document.getElementById('n').value,em=document.getElementById('e').value,ms=document.getElementById('m').value,note=document.getElementById('note');
  if(FORM_ENDPOINT){
   note.textContent='Sending…';
-  fetch(FORM_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({name:nm,email:em,message:ms})})
-   .then(r=>{if(r.ok){note.textContent='Thank you. Your message has been sent.';e.target.reset()}else throw 0})
-   .catch(()=>{note.textContent='Sorry, sending failed. Please email surya@xtbg.ac.cn directly.'});
+  fetch(FORM_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({to:to,name:nm,email:em,message:ms})})
+   .then(r=>{if(r.ok){note.textContent='Thank you. Your message has been sent.';e.target.reset();document.getElementById('t').value='trysuryaharapan@gmail.com'}else throw 0})
+   .catch(()=>{note.textContent='Sorry, sending failed. Please email trysuryaharapan@gmail.com directly.'});
   return;
  }
- const txt='To: surya@xtbg.ac.cn\nFrom: '+nm+' <'+em+'>\n\n'+ms;
+ const txt='To: '+to+'\nFrom: '+nm+' <'+em+'>\n\n'+ms;
  try{navigator.clipboard.writeText(txt)}catch(_){}
- note.textContent='Sending is not connected yet, so nothing was sent. Your message is copied: please paste it into an email to surya@xtbg.ac.cn.';
- location.href='mailto:surya@xtbg.ac.cn?subject='+encodeURIComponent('Message from '+nm)+'&body='+encodeURIComponent(ms+'\n\n'+nm+' ('+em+')');
+ note.textContent='Sending is not connected yet, so nothing was sent. Your message is copied: please paste it into an email to '+to+'.';
+ location.href='mailto:'+to+'?subject='+encodeURIComponent('Message from '+nm)+'&body='+encodeURIComponent(ms+'\n\n'+nm+' ('+em+')');
 });
 })();
 </script>
