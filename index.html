@@ -126,7 +126,7 @@ header.onlight nav a:hover{background:var(--fg);color:var(--ink)}
 .papers{padding-top:48px;padding-bottom:40px}
 .paper-row{display:grid;grid-template-columns:90px 1fr auto;gap:20px;align-items:baseline;padding:26px 0;border-top:1px solid var(--line);text-decoration:none}
 .paper-row:last-child{border-bottom:1px solid var(--line)}
-.paper-row:hover h3{color:var(--acc)}
+.a.paper-row:hover h3,a.paper-row:hover h3{color:var(--acc)}.paper-row.soon{cursor:default}
 .paper-row .y{font:500 13px 'Space Grotesk';letter-spacing:.16em;color:var(--mute)}
 .paper-row h3{margin:0 0 4px;font-weight:500;font-size:clamp(19px,2.2vw,28px);line-height:1.2}
 .paper-row p{margin:0;color:var(--mute);font-size:14px}
@@ -231,11 +231,11 @@ if(rm){lis.forEach(l=>l.textContent=l.dataset.t.toUpperCase())}else{lis.forEach(
 <section class="papers in" id="papers">
 <div class="tag">Selected research paper</div>
 <div style="height:14px"></div>
-<a class="paper-row" href="https://www.researchgate.net/profile/Try-Harapan"><span class="y">Soon</span><div><h3>Elephant &amp; fence</h3><p>Forthcoming</p></div><span class="go">View &gt;</span></a>
-<a class="paper-row" href="https://www.researchgate.net/profile/Try-Harapan"><span class="y">2026</span><div><h3>Sundaic giant tortoise ecology</h3><p>Integrative Zoology 21(4): 798–816</p></div><span class="go">View &gt;</span></a>
-<a class="paper-row" href="https://www.researchgate.net/profile/Try-Harapan"><span class="y">2026</span><div><h3>Megafauna in Laos</h3><p>Global Ecology and Conservation, e04399</p></div><span class="go">View &gt;</span></a>
-<a class="paper-row" href="https://www.researchgate.net/profile/Try-Harapan"><span class="y">2025</span><div><h3>Sumatran rhinos ecology</h3><p>Biological Conservation 312: 111479</p></div><span class="go">View &gt;</span></a>
-<a class="paper-row" href="https://www.researchgate.net/profile/Try-Harapan"><span class="y">2023</span><div><h3><i>Lithocarpus tapanuliensis</i></h3><p>PhytoKeys 234: 167</p></div><span class="go">View &gt;</span></a>
+<div class="paper-row soon"><span class="y">Soon</span><div><h3>Elephant &amp; fence</h3><p>Forthcoming</p></div></div>
+<a class="paper-row" href="https://onlinelibrary.wiley.com/doi/abs/10.1111/1749-4877.12965" target="_blank" rel="noopener"><span class="y">2026</span><div><h3>Sundaic giant tortoise ecology</h3><p>Integrative Zoology 21(4): 798–816</p></div><span class="go">View &gt;</span></a>
+<a class="paper-row" href="https://www.sciencedirect.com/science/article/pii/S2351989426003495" target="_blank" rel="noopener"><span class="y">2026</span><div><h3>Megafauna in Laos</h3><p>Global Ecology and Conservation, e04399</p></div><span class="go">View &gt;</span></a>
+<a class="paper-row" href="https://www.sciencedirect.com/science/article/pii/S0006320725005166" target="_blank" rel="noopener"><span class="y">2025</span><div><h3>Sumatran rhinos ecology</h3><p>Biological Conservation 312: 111479</p></div><span class="go">View &gt;</span></a>
+<a class="paper-row" href="https://phytokeys.pensoft.net/article/106015/" target="_blank" rel="noopener"><span class="y">2023</span><div><h3><i>Lithocarpus tapanuliensis</i></h3><p>PhytoKeys 234: 167</p></div><span class="go">View &gt;</span></a>
 </section>
 
 <section class="project in" id="project">
