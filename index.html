@@ -44,6 +44,8 @@ header.onlight nav a:hover{background:var(--fg);color:var(--ink)}
 .hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.35),transparent 30%,transparent 60%,rgba(0,0,0,.35))}
 .hero h1{position:absolute;z-index:2;left:var(--gut);right:var(--gutr);top:50%;transform:translateY(-50%);margin:0 auto;max-width:1400px;font-family:Oxanium,'Space Mono',ui-monospace,Menlo,Consolas,monospace;font-weight:300;font-size:clamp(32px,7.6vw,124px);line-height:1.04;letter-spacing:.015em;text-transform:uppercase}
 .hero h1 span{display:block}
+.hero .sub2{position:absolute;z-index:2;left:var(--gut);bottom:calc(8vh + 28px);margin:0;max-width:min(30em,60vw);font:400 clamp(15px,1.35vw,20px)/1.4 Inter,sans-serif;color:#f2f1ea;text-shadow:0 1px 12px rgba(0,0,0,.5)}
+@media(max-width:640px){.hero .sub2{bottom:84px;max-width:calc(100% - var(--gut) - var(--gutr));font-size:14px}}
 .scrollhint{position:absolute;z-index:2;right:var(--gutr);bottom:3vh;font:500 11px 'Space Grotesk';letter-spacing:.2em;text-transform:uppercase;color:var(--mute)}
 /* intro */
 .intro{padding-top:90px;padding-bottom:40px}
@@ -165,6 +167,7 @@ footer a{margin:0 10px}
 <section class="hero" id="top">
 <canvas id="hero" aria-label="Tropical forest canopy, shown first in violet and orange glitch tones, resolving into natural colour"></canvas>
 <h1><span>Megafauna</span><span>ecosystem</span><span>functioning</span></h1>
+<p class="sub2">I'm an ecologist interested in large wildlife across tropical Asia and their ecological roles.</p>
 <div class="scrollhint">Scroll ↓</div>
 </section>
 
