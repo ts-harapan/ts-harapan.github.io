@@ -314,7 +314,7 @@ if(DRONE_URL){const v=document.getElementById('drone');v.src=DRONE_URL;v.dataset
 
 // ---------- contact form ----------
 // To send for real from the hosted site, create a free Formspree form and paste its URL here, e.g. 'https://formspree.io/f/xxxxxxxx'
-const FORM_ENDPOINT='';
+const FORM_ENDPOINT='https://formspree.io/f/xyewjqll';
 const hd=document.querySelector('header'),lights=document.querySelectorAll('.light,.paper');
 function hdTone(){const y=hd.getBoundingClientRect().top+hd.offsetHeight/2;let on=false;lights.forEach(s=>{const r=s.getBoundingClientRect();if(r.top<=y&&r.bottom>=y)on=true});hd.classList.toggle('onlight',on)}
 const mb=document.getElementById('mbtn');
