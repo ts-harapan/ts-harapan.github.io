@@ -50,6 +50,11 @@ th{font-weight:600;color:var(--mute)}
 .scroll{overflow-x:auto}
 a{color:var(--accent)}
 @media(max-width:600px){table{font-size:13px}}
+/* first screen: header + whole map fit the window */
+.strip{padding-block:clamp(16px,2.2vw,28px)}.strip h1{font-size:clamp(26px,3.6vw,48px)}.back{margin-bottom:14px}
+main.band{padding-top:clamp(14px,1.6vw,22px)}
+@media(min-width:901px){.fig+.legend{margin-top:36px}.grid{grid-template-columns:min(calc((100svh - var(--hh,200px)) * 1.1667),66%) minmax(300px,1fr)}}
+@media(max-width:900px){.fig{max-height:calc(100svh - var(--hh,200px));width:min(100%,calc((100svh - var(--hh,200px)) * 1.1667));margin-inline:auto}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -238,6 +243,8 @@ function draw(){
 function siteCard(){const el=$('site');if(st.hover==null){el.innerHTML=st.plc==='pick'?'Tap test sites on the map to add them to your scenario.':'Hover or tap a test site to see what mining only there would cost.';return}
  const s=D.sites[st.hover],r=s.r[st.rate],e=st.one[st.hover],r0=r;
  el.innerHTML=`<h3 style="margin-bottom:6px">Hypothetical test site ${st.hover} · ${s.d} km from park</h3>Mining only here at ${st.rate} ton/day (${$('season').querySelector('[aria-pressed=true]').textContent.toLowerCase()}): park waters above 5 mg/L ${e.pk5} ha (above 20: ${e.pk20} ha).<br><b>${fmtRp(e.rp)} per year</b> · ${fmtRp(e.rp*D.params.AF)} over 25 years.${st.combo.has(st.hover)?' <b>Mined in this scenario.</b>':''}${st.plc==='pick'?' Tap to '+(st.pick.has(st.hover)?'remove it from':'add it to')+' your pick.':''}`}
+
+const fitHH=()=>{const h=document.querySelector('header.strip').offsetHeight,m=parseFloat(getComputedStyle(document.querySelector('main.band')).paddingTop)||0;document.documentElement.style.setProperty('--hh',(h+m+24)+'px')};fitHH();addEventListener('resize',fitHH);document.fonts&&document.fonts.ready.then(fitHH);
 const cvs=$('cv');let drag=null;
 cvs.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY,ox:st.ox,oy:st.oy};cvs.setPointerCapture(e.pointerId)});
 cvs.addEventListener('pointerup',e=>{const moved=drag&&Math.hypot(e.clientX-drag.x,e.clientY-drag.y)>4;drag=null;if(!moved){const b=pick(e);if(b!=null&&st.plc==='pick'&&st.n!=='all'){st.pick.has(b)?st.pick.delete(b):st.pick.add(b);upd()}}});
