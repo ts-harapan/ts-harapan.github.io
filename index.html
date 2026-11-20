@@ -138,7 +138,7 @@ header.onlight nav a:hover{background:var(--fg);color:var(--ink)}
 .paper-row{position:relative}.paper-row h3 a{color:inherit;text-decoration:none}.paper-row h3 a::after{content:"";position:absolute;inset:0}.paper-row.has-link{cursor:pointer}.paper-row.has-link:hover h3,.paper-row.has-link:hover .go{color:var(--acc)}.paper-row.soon{cursor:default}
 .paper-row .y{font:500 13px 'Space Grotesk';letter-spacing:.16em;color:var(--mute)}
 .paper-row h3{margin:0 0 4px;font-weight:500;font-size:clamp(19px,2.2vw,28px);line-height:1.2}
-.paper-row p{margin:0;color:var(--mute);font-size:14px}
+.paper-row p{margin:0;color:var(--mute);font-size:14px}.paper-row .me{color:var(--fg);font-weight:500}
 .paper-row .go{font:500 12px 'Space Grotesk';letter-spacing:.18em;text-transform:uppercase;color:var(--mute)}
 @media(max-width:640px){.paper-row{grid-template-columns:46px minmax(0,1fr);gap:10px;align-items:center;padding:16px 0}.paper-row p,.paper-row .go{display:none}.paper-row h3{margin:0;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.paper-row .y{font-size:11px}}
 /* project */
@@ -151,7 +151,7 @@ header.onlight nav a:hover{background:var(--fg);color:var(--ink)}
 .issue h3{font-size:clamp(24px,3vw,44px);line-height:1.05;margin:0;font-weight:700;text-transform:uppercase;letter-spacing:-.01em}
 @media(max-width:820px){.project .big,.issue{grid-template-columns:1fr;gap:20px}}
 /* contact */
-header.onlight{background:rgba(244,243,238,.88);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}header .in::after{content:"";position:absolute;left:var(--gut);right:var(--gutr);bottom:0;height:1px;background:rgba(255,255,255,.7);pointer-events:none}header .in{position:relative}header.onlight .in::after{display:none}header.open .in::after{display:none}header.onlight .logo{color:var(--ink)}header.onlight nav a{color:var(--ink);border-color:var(--ink)}header.onlight nav a:hover{background:var(--ink);color:var(--paper)}header.onlight nav a.game{color:#c4551f;border-color:#c4551f}header .logo,header nav a{transition:color .25s,border-color .25s,background .25s}
+header.onlight{background:rgba(244,243,238,.88);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}header{transition:background .25s}header.ondark{background:rgba(11,13,11,.65);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}header.ondark .in::after{display:none}header .in::after{content:"";position:absolute;left:var(--gut);right:var(--gutr);bottom:0;height:1px;background:rgba(255,255,255,.7);pointer-events:none}header .in{position:relative}header.onlight .in::after{display:none}header.open .in::after{display:none}header.onlight .logo{color:var(--ink)}header.onlight nav a{color:var(--ink);border-color:var(--ink)}header.onlight nav a:hover{background:var(--ink);color:var(--paper)}header.onlight nav a.game{color:#c4551f;border-color:#c4551f}header .logo,header nav a{transition:color .25s,border-color .25s,background .25s}
 @media(min-width:821px){.contact{aspect-ratio:16/9;min-height:0!important;padding-top:0!important;padding-bottom:0!important}}
 .contact{position:relative;min-height:70vh;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:90px var(--gutr) 90px var(--gut)}
 .contact canvas,.contact video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
@@ -175,7 +175,7 @@ footer a{margin:0 10px}
 </head>
 <body>
 <header><div class="in">
-<div class="brand"><a class="logo" href="#top">TRY SURYA HARAPAN</a><span class="tag">I'm an ecologist interested in large wildlife across tropical Asia and their ecological roles.</span></div>
+<div class="brand"><a class="logo" href="#top">TRY SURYA HARAPAN</a><span class="tag">Ecology Researcher</span></div>
 <div class="mr"><a class="gicon" href="game.html" aria-label="Switch to game"></a><button class="mbtn" id="mbtn" aria-expanded="false" aria-controls="nv">Menu +</button></div>
 <nav id="nv"><a href="#papers">Research paper</a><a href="#project">Project</a><a class="game" href="game.html">Switch to game</a></nav>
 </div></header>
@@ -221,7 +221,7 @@ if(rm){lis.forEach(l=>l.textContent=l.dataset.t.toUpperCase())}else{lis.forEach(
 <div class="tagrow"><span class="box">Featured research</span><span class="slash" aria-hidden="true"></span></div>
 <h2 class="sr">Sumatran rhino, the world's most understudied large herbivore</h2>
 <div class="rule k"></div>
-<p class="body2">Its large body and unique foraging behaviour may shape its ecosystem in distinctive ways. <a class="more k inl" href="#papers">Read more &gt;</a></p>
+<p class="body2">Its large body and unique foraging behaviour may shape its ecosystem in unique ways. <a class="more k inl" href="#papers">Read more &gt;</a></p>
 <div class="rule k"></div>
 </div></div>
 </section>
@@ -242,11 +242,11 @@ if(rm){lis.forEach(l=>l.textContent=l.dataset.t.toUpperCase())}else{lis.forEach(
 <section class="papers in" id="papers">
 <div class="tag">Selected research paper</div>
 <div style="height:14px"></div>
-<div class="paper-row soon"><span class="y">Soon</span><div><h3>Elephant &amp; fence</h3><p>Forthcoming</p></div></div>
-<div class="paper-row has-link"><span class="y">2026</span><div><h3><a href="https://www.sciencedirect.com/science/article/pii/S2351989426003495" target="_blank" rel="noopener">Megafauna in Laos</a></h3><p>Global Ecology and Conservation, e04399</p></div><span class="go">View &gt;</span></div>
-<div class="paper-row has-link"><span class="y">2025</span><div><h3><a href="https://onlinelibrary.wiley.com/doi/abs/10.1111/1749-4877.12965" target="_blank" rel="noopener">Sundaic giant tortoise ecology</a></h3><p>Integrative Zoology 21(4): 798–816</p></div><span class="go">View &gt;</span></div>
-<div class="paper-row has-link"><span class="y">2025</span><div><h3><a href="https://www.sciencedirect.com/science/article/pii/S0006320725005166" target="_blank" rel="noopener">Sumatran rhinos ecology</a></h3><p>Biological Conservation 312: 111479</p></div><span class="go">View &gt;</span></div>
-<div class="paper-row has-link"><span class="y">2023</span><div><h3><a href="https://phytokeys.pensoft.net/article/106015/" target="_blank" rel="noopener"><i>Lithocarpus tapanuliensis</i></a></h3><p>PhytoKeys 234: 167</p></div><span class="go">View &gt;</span></div>
+<div class="paper-row soon"><span class="y">Soon</span><div><h3>Elephant &amp; fence</h3><p><b class="me">Harapan</b> et al. · Forthcoming</p></div></div>
+<div class="paper-row has-link"><span class="y">2026</span><div><h3><a href="https://www.sciencedirect.com/science/article/pii/S2351989426003495" target="_blank" rel="noopener">Megafauna in Laos</a></h3><p>Souvansai, Ruppert, <b class="me">Harapan</b> et al. · Global Ecology and Conservation, e04399</p></div><span class="go">View &gt;</span></div>
+<div class="paper-row has-link"><span class="y">2025</span><div><h3><a href="https://onlinelibrary.wiley.com/doi/abs/10.1111/1749-4877.12965" target="_blank" rel="noopener">Sundaic giant tortoise ecology</a></h3><p><b class="me">Harapan</b> et al. · Integrative Zoology 21(4): 798–816</p></div><span class="go">View &gt;</span></div>
+<div class="paper-row has-link"><span class="y">2025</span><div><h3><a href="https://www.sciencedirect.com/science/article/pii/S0006320725005166" target="_blank" rel="noopener">Sumatran rhinos ecology</a></h3><p><b class="me">Harapan</b> et al. · Biological Conservation 312: 111479</p></div><span class="go">View &gt;</span></div>
+<div class="paper-row has-link"><span class="y">2023</span><div><h3><a href="https://phytokeys.pensoft.net/article/106015/" target="_blank" rel="noopener"><i>Lithocarpus tapanuliensis</i></a></h3><p><b class="me">Harapan</b> et al. · PhytoKeys 234: 167</p></div><span class="go">View &gt;</span></div>
 </section>
 
 <section class="project in" id="project">
@@ -359,7 +359,7 @@ if(DRONE_URL){const v=document.getElementById('drone');v.src=DRONE_URL;v.dataset
 // To send for real from the hosted site, create a free Formspree form and paste its URL here, e.g. 'https://formspree.io/f/xxxxxxxx'
 const FORM_ENDPOINT='https://formspree.io/f/xyewjqll';
 const hd=document.querySelector('header'),lights=document.querySelectorAll('.light,.paper');
-function hdTone(){const y=hd.getBoundingClientRect().top+hd.offsetHeight/2;let on=false;lights.forEach(s=>{const r=s.getBoundingClientRect();if(r.top<=y&&r.bottom>=y)on=true});hd.classList.toggle('onlight',on)}
+function hdTone(){const y=hd.getBoundingClientRect().top+hd.offsetHeight/2;let on=false;lights.forEach(s=>{const r=s.getBoundingClientRect();if(r.top<=y&&r.bottom>=y)on=true});hd.classList.toggle('onlight',on);const hr=document.querySelector('.hero').getBoundingClientRect();hd.classList.toggle('ondark',!on&&hr.bottom<y)}
 const mb=document.getElementById('mbtn');
 mb.addEventListener('click',()=>{const o=hd.classList.toggle('open');mb.setAttribute('aria-expanded',o);mb.textContent=o?'Close \u2212':'Menu +'});
 document.querySelectorAll('#nv a').forEach(a=>a.addEventListener('click',()=>{hd.classList.remove('open');mb.setAttribute('aria-expanded','false');mb.textContent='Menu +'}));
