@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sea mining risk simulation for Ujung Kulon</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&family=Oxanium:wght@300;400&display=swap" rel="stylesheet">
+<style>
+/* VOICE: a marine survey sheet — exact, calm, numbers you can check.
+   IDEA: a nautical chart with a live damage ledger beside it.
+   PICTURE: the chart itself — blue sea, green park, emerald reefs, plume heat on top.
+   COLOUR and TYPE: ocean blue ground, park green, emerald-blue habitat, amber plume; Space Grotesk titles, Inter body.
+   LAYOUT: title strip, chart + ledger side by side above 900px, stacked below; method and sources after. */
+:root{color-scheme:dark;--bg:light-dark(#ffffff,#0b0d0b);--ink:light-dark(#10202e,#e6eef5);--mute:light-dark(#566673,#9fb0bf);
+--sea:#1f6fa8;--sea2:#185d8f;--land:light-dark(#e9e5da,#2a2f33);--landEdge:light-dark(#b9b2a0,#4a5156);--park:#2e9e5b;--parkEdge:#1c7a3e;
+--hab:#14d6c4;--mpa:#c47bff;--wup:#f2c14e;--line:light-dark(#d9e1e7,#24323f);--card:light-dark(#f4f8fb,#131813);--accent:#e8783f}
+
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Inter,system-ui,sans-serif;overflow-x:clip}
+h1,h2,h3{font-family:"Space Grotesk",Inter,sans-serif;font-weight:600;line-height:1.08;margin:0;text-wrap:balance}
+h1{font-size:clamp(28px,4.2vw,46px)}h2{font-size:24px;margin-bottom:12px}h3{font-size:17px}
+.band{padding:clamp(22px,3.5vw,48px) max(4vw,16px)}
+.strip{position:relative;overflow:hidden;color:#f2f1ea;background:radial-gradient(ellipse 70% 120% at 85% 0%,rgba(31,111,168,.35),transparent 60%),radial-gradient(ellipse 50% 90% at 0% 100%,rgba(232,120,63,.14),transparent 60%),#0b0d0b;border-bottom:1px solid rgba(242,241,234,.18)}.strip::before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(141,255,168,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(141,255,168,.07) 1px,transparent 1px),linear-gradient(rgba(141,255,168,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(141,255,168,.035) 1px,transparent 1px);background-size:80px 80px,80px 80px,16px 16px,16px 16px;-webkit-mask-image:linear-gradient(180deg,#000 40%,transparent);mask-image:linear-gradient(180deg,#000 40%,transparent);pointer-events:none}.strip::after{content:"";position:absolute;left:0;right:0;top:0;height:40%;background:linear-gradient(180deg,transparent,rgba(141,255,168,.07),transparent);animation:scan 6s linear infinite;pointer-events:none}@keyframes scan{from{transform:translateY(-100%)}to{transform:translateY(260%)}}@media(prefers-reduced-motion:reduce){.strip::after{display:none}}.strip .wrap{position:relative;z-index:1}.strip h1{font-family:Oxanium,"Space Mono",monospace;font-weight:300;text-transform:uppercase;letter-spacing:.02em;font-size:clamp(30px,5vw,64px);line-height:1.04}.back{display:inline-block;font:500 12px "Space Grotesk",sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#f2f1ea;text-decoration:none;border:1px solid #f2f1ea;border-radius:999px;padding:10px 16px;margin-bottom:28px;transition:.2s}.back:hover{border-color:var(--accent);color:var(--accent)}.strip p{color:#d6e8f5;max-width:70ch;margin:12px 0 0}
+.wrap{max-width:1240px;margin:0 auto}
+.grid{display:grid;grid-template-columns:minmax(0,1.9fr) minmax(0,1fr);gap:22px;align-items:start}
+@media(max-width:900px){.grid{grid-template-columns:minmax(0,1fr)}}
+.fig{position:relative;aspect-ratio:10500/9000;border-radius:10px;overflow:hidden;background:var(--sea);touch-action:none}
+.fig canvas{position:absolute;inset:0;width:100%;height:100%;cursor:grab}.fig #curcv{pointer-events:none}.curlbl{position:absolute;left:10px;top:10px;font:12px/1.3 "Space Mono",ui-monospace,monospace;color:#e6f6ff;background:rgba(8,12,10,.62);padding:6px 9px;border-radius:6px;display:none;max-width:calc(100% - 80px);flex-wrap:wrap;align-items:center;gap:4px 6px}.curlbl .sh{display:none}@media(max-width:600px){.curlbl .l{display:none}.curlbl .sh{display:inline}.curlbl button{padding:0 6px}}.curlbl .cs{display:flex;flex-wrap:wrap;gap:4px}.curlbl button{font:inherit;color:inherit;background:transparent;border:1px solid transparent;border-radius:4px;min-height:28px;padding:0 8px;opacity:.6;cursor:pointer}.curlbl button:hover{opacity:1}.curlbl button[aria-pressed=true]{opacity:1;border-color:rgba(230,246,255,.75)}
+.zoom{position:absolute;right:10px;top:10px;display:flex;flex-direction:column;gap:6px}
+.zoom button{width:44px;height:44px;font-size:20px}
+button,select{font:inherit;font-size:16px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);min-height:44px;padding:0 12px;cursor:pointer}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.seg{display:flex;flex-wrap:wrap;gap:6px}.seg button[aria-pressed=true]{background:var(--accent);color:#10120f;border-color:var(--accent)}
+.ctl{display:grid;gap:14px;margin-top:16px}.ctl label{font-size:14px;color:var(--mute);display:block;margin-bottom:6px}
+.tog{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:14px}.tog label{display:flex;align-items:center;gap:6px;color:var(--ink);margin:0;min-height:32px}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.ledger{background:var(--card);border-radius:10px;padding:18px}
+.big{font-family:"Space Grotesk",sans-serif;font-size:clamp(30px,4vw,44px);font-weight:600;line-height:1;white-space:nowrap}
+.kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:14px 0}
+.kpi small{display:block;color:var(--mute);font-size:13px}.kpi b{font-size:22px;white-space:nowrap}
+table{border-collapse:collapse;width:100%;font-size:14px}th,td{padding:6px 6px;border-bottom:1px solid var(--line);text-align:right}th:first-child,td:first-child{text-align:left}
+th{font-weight:600;color:var(--mute)}
+.legend{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:13px;margin-top:10px;color:var(--mute)}
+.lg{display:grid;gap:8px;font-size:12px}.lg>div{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:center}.lg span{white-space:nowrap}.lg b{color:var(--ink);font-weight:600;flex:0 0 7.5em;line-height:1.2}
+.sw{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:-2px;margin-right:6px}
+.tip{position:absolute;pointer-events:none;background:#0b1420ee;color:#fff;font-size:13px;padding:8px 10px;border-radius:8px;max-width:240px;display:none;z-index:3}
+.note{font-size:13px;color:var(--mute)}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:22px}
+.scroll{overflow-x:auto}
+a{color:var(--accent)}
+@media(max-width:600px){table{font-size:13px}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header class="band strip"><div class="wrap">
+<a class="back" href="../index.html">← Back to Main Page</a>
+<h1>Sea mining risk simulation for Ujung Kulon</h1>
+</div></header>
+
+<main class="band"><div class="wrap grid">
+<section>
+ <div class="fig" id="fig"><canvas id="cv" aria-label="Map of Ujung Kulon, mining zone, plumes and habitat"></canvas><canvas id="curcv" aria-hidden="true"></canvas><div class="curlbl" id="curlbl"><span><span class="l">Ocean c</span><span class="sh">C</span>urrents:</span><span class="cs" id="curs"></span></div>
+  <div class="zoom"><button id="zin" aria-label="Zoom in">+</button><button id="zout" aria-label="Zoom out">−</button><button id="zre" aria-label="Reset view">⟲</button></div>
+  <div class="tip" id="tip"></div></div>
+ <div class="legend lg">
+  <div><b>Places</b><span><i class="sw" style="background:rgba(46,180,90,.6)"></i>Ujung Kulon NP</span><span><i class="sw" style="border:2px solid var(--mpa)"></i>Marine Protected Area</span><span><i class="sw" style="background:var(--hab)"></i>Coral reef / seagrass</span><span><i class="sw" style="background:var(--wup);opacity:.55"></i>Mining Business Area (WUP)</span></div>
+  <div><b>Test sites</b><span><i class="sw" style="background:#fff;border-radius:50%;border:1px solid #000"></i>not mined</span><span>park water muddied by one site: <i class="sw" style="background:#ffe14d;border-radius:50%"></i>25–75 ha <i class="sw" style="background:#ff9a1f;border-radius:50%"></i>100–175 <i class="sw" style="background:#ff3b30;border-radius:50%"></i>200–275 <i class="sw" style="background:#d61aff;border-radius:50%"></i>300+ ha</span></div>
+  <div><b>Sediment</b><span>extra mud: <i class="sw" style="background:#ffe678"></i>0.5–2 <i class="sw" style="background:#ff9628"></i>2–5 <i class="sw" style="background:#eb321e"></i>5–20 <i class="sw" style="background:#960014"></i>&gt;20 mg/L</span><span>inside the park: <i class="sw" style="border:2px solid #ff2bd6"></i>&gt;5 mg/L <i class="sw" style="background:rgba(255,43,214,.6)"></i>&gt;20 mg/L (above legal limit)</span></div>
+  <div><b>Proposed no-mining zone</b><span><i class="sw" style="border:3px solid #fff;background:rgba(255,255,255,.3);outline:1px solid #888"></i>highest risk</span><span><i class="sw" style="border:2px dashed #888"></i>at risk</span></div>
+ </div>
+ <div class="ctl">
+  <div><label>Fine sediment released per site</label><div class="seg" id="rate"></div></div>
+  <div><label>Ocean currents</label><div class="seg" id="cur"></div><div class="note" style="margin-top:6px;display:grid;gap:4px">
+   <span><b>Idealised monsoon:</b> simple seasonal currents set from the monsoon pattern. Matches what satellites show in the bay toward Sumur.</span>
+   <span><b>HYCOM:</b> real currents from a global ocean model, 2015–2024. Reliable offshore, but its 9 km grid cannot see small bays near the coast.</span>
+   <span><b>Precautionary:</b> uses both and keeps the muddier result at every spot, so a risk is shown if either one finds it. Recommended.</span>
+   <span>The mines stay in the same place; only where the mud goes changes.</span><span><b>Moving streaks:</b> HYCOM GOFS 3.1 surface currents, seasonal means from 2 days a month, 2019–2024, sped up for display. Pick the season to animate in the box at the top left of the map; it is separate from the plume season.</span></div></div>
+  <div><label>Season</label><div class="seg" id="season"></div></div>
+  <div class="tog" id="layers"></div>
+ </div>
+</section>
+
+<aside class="ledger" aria-live="polite">
+ <div class="ctl" style="margin-top:0">
+  <div><label>Mines operating at the same time</label><div class="seg" id="nm"></div></div>
+  <div><label>Where they are</label><div class="seg" id="plc"></div><div class="note" id="plcnote" style="margin-top:6px"></div></div>
+ </div>
+ <h2 id="lh" style="margin:18px 0 4px">–</h2>
+ <div class="note" id="scen"></div>
+ <div class="big" id="annual" style="margin-top:12px">–</div>
+ <div class="note">lost value per year (2025 Rp)</div>
+ <div class="kpis">
+  <div class="kpi"><small>25-year loss, 6 % discount</small><b id="npv">–</b></div>
+  <div class="kpi"><small>Habitat-equivalent hectares lost</small><b id="eqha">–</b></div>
+  <div class="kpi"><small>Park waters above 5 mg/L</small><b id="pk5">–</b></div>
+  <div class="kpi"><small>Park waters above 20 mg/L</small><b id="pk20">–</b></div>
+ </div>
+ <div class="note" id="share" style="margin-bottom:10px"></div>
+ <table><thead><tr><th>Exposed habitat</th><th>5–20 mg/L</th><th>&gt;20 mg/L</th><th>Rp bn/yr</th></tr></thead><tbody id="tb"></tbody></table>
+ <div class="ctl">
+  <div><label>Value per hectare</label><div class="seg" id="val"></div><div class="note" id="valnote" style="margin-top:6px"></div></div>
+  <div><label for="l5">Value lost at 5–20 mg/L: <b id="l5v"></b></label><input type="range" id="l5" min="0" max="50" step="1" value="10"></div>
+  <div><label for="l20">Value lost above 20 mg/L (PP 22/2021 coral/seagrass limit): <b id="l20v"></b></label><input type="range" id="l20" min="10" max="100" step="5" value="50"></div>
+ </div>
+ <div id="site" class="note" style="margin-top:14px">Hover or tap a hypothetical test site (a possible mining location, not an actual permit) to see what mining only there would cost.</div>
+</aside>
+</div></main>
+
+<section class="band" style="border-top:1px solid var(--line)"><div class="wrap cols">
+ <div><h2>Values used (Rp million / ha / year, 2025)</h2>
+  <div class="scroll"><table><thead><tr><th>Habitat</th><th>Low</th><th>Mid</th><th>High</th></tr></thead><tbody id="vt"></tbody></table></div>
+  <p class="note">Coral: Raja Ampat fisheries value (2020) low; Gili Indah total economic value mid; Ujung Kulon reef-flat seaweed value high (direct + existence, Wahyudin 2007 data). Seagrass: Bintan fish-production value low, habitat value high (Wahyudin 2022). 2007 values × 2.23 and 2022 values × 1.07 for inflation (BPS annual CPI).</p></div>
+ <div><h2>Three cases and the proposed no-mining zone</h2>
+  <p><b>Expected:</b> 1–3 mines anywhere in the zone; little or no harm to the park. <b>Main risk:</b> 3 mines in the high-risk area. <b>Ceiling:</b> every high-risk site at once.</p>
+  <p>Distance is a poor rule: risky test sites lie 0.5–14.5 km from the park while many sites 1–3 km away are harmless, because currents decide where sediment goes. So the proposed no-mining zone is drawn from the plumes: 5 km cells around every test site that pushes park waters above 5 mg/L at 200 ton/day. <b>Highest risk (115 km²)</b>: both current data sets agree (5 sites). <b>At risk (775 km²)</b>: one of them flags it (33 more sites); idealised currents flag the bay toward Sumur and west of Panaitan, HYCOM flags the channel between Panaitan and the peninsula's north coast.</p>
+  <p class="note">HYCOM GOFS 3.1 currents, 2015–2024 seasonal means, 0–10 m. Turbidity check: Sentinel-2 red-band medians 2019–2024 around the north-coast river mouth shift east (away from the park) in the NW monsoon and south (toward it) in the SE monsoon, matching the idealised currents there. Before a zone is drawn into regulation, confirm with a high-resolution hydrodynamic model or drifters.</p></div>
+ <div><h2>How to read it</h2>
+  <p>Mining all 103 test sites at once is a theoretical ceiling, not a plan, so the default is a small number of mines. "Typical" and "1-in-10 bad" come from 300 random layouts of that many mines (all 103 sites for one mine), ranked by lost value; "Worst sites" puts the mines on the test sites that do the most damage on their own. Plumes from mines running together are added up. Only mining <b>outside</b> the park is modelled; WUP blocks that the decree draws inside the park are left out here. Damage is a fraction of yearly value where extra sediment stays above 5 mg/L (stress) or 20 mg/L (above the legal limit) for the 10-day average. Banten reefs already reached thermal-stress warning levels in 2015–2019 (Gusviga et al. 2021), so sediment adds to an existing stress: the high setting reflects that.</p>
+  <p class="note">Screening only: idealised currents, digitised WUP (±250 m), assumed release rates and loss fractions. Not an AMDAL.</p></div>
+</div></section>
+
+<script>
+{
+const $=id=>document.getElementById(id);
+const st={curs:'SE',cur:'max',n:3,plc:'risk',one:[],risk:[],pick:new Set(),combo:new Set(),F:null,rate:200,season:'Worst',val:'mid',l5:.10,l20:.50,lay:{cur:true,plume:true,excl:true,hab:true,wup:true,sites:true,mpa:true},k:1,ox:0,oy:0,hover:null};
+const fmtRp=v=>v>=1000?`Rp ${(v/1000).toFixed(1)} tn`:`Rp ${v.toFixed(1)} bn`;
+let D=null,PM=null,SP=[0,0],NS=0,MD=[],K=0,HK,PK,AC,LAY={};const GN=['NW','SE','Trans'];
+let SAT=null,RH=null;fetch('rhino.png').then(r=>r.blob()).then(b=>{const i=new Image();i.onload=()=>{RH=i;draw()};i.src=URL.createObjectURL(b)}).catch(()=>{});
+fetch('sat.jpg').then(r=>r.blob()).then(b=>{const i=new Image();i.onload=()=>{SAT=i;draw()};i.src=URL.createObjectURL(b)}).catch(()=>{});
+fetch('mapdata.json').then(r=>r.json()).then(d=>{D=d;init()}).catch(()=>{$('scen').textContent='Map data could not load.'});
+function bytes(b64){const s=atob(b64),a=new Uint8Array(s.length);for(let i=0;i<s.length;i++)a[i]=s.charCodeAt(i);return a}
+function mb(a){return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function lay(n,pool,seed){pool=pool||[...Array(NS).keys()];const key=n+':'+pool.join(',');if(LAY[key])return LAY[key];const r=mb((seed||65)+n),out=[],P=pool.length;for(let m=0;m<300;m++){const a=pool.slice();for(let i=0;i<n;i++){const j=i+Math.floor(r()*(P-i));[a[i],a[j]]=[a[j],a[i]]}out.push(a.slice(0,n).sort((x,y)=>x-y))}return LAY[key]=out}
+const MS=()=>st.cur==='ideal'?[0]:st.cur==='hycom'?[1]:[0,1];
+function acc(combo,s,arr,tmp){arr.fill(0);const ms=MS();for(const [n,mi] of ms.entries()){const m=MD[mi],a=n?tmp:arr;if(n)a.fill(0);for(const k of combo){const o=k*3+s;for(let t=m.KO[o];t<m.KO[o+1];t++)a[m.KI[t]]+=m.KV[t]}if(n)for(let i=0;i<K;i++)if(a[i]>arr[i])arr[i]=a[i]}}
+function met(combo){const R=st.rate/100;let g;
+ if(st.season==='Worst'){for(let s=0;s<3;s++)acc(combo,s,AC[s],AC[4]);g=AC[3];for(let i=0;i<K;i++)g[i]=Math.max(AC[0][i],AC[1][i],AC[2][i])}else{g=AC[0];acc(combo,GN.indexOf(st.season),g,AC[4])}
+ const z=[[0,0,0,0],[0,0,0,0],[0,0,0,0]];D.hab.forEach(([i,j,c,s,zn],h)=>{const v=g[HK[h]]*R;if(v>20){z[zn][1]+=c;z[zn][3]+=s}else if(v>5){z[zn][0]+=c;z[zn][2]+=s}});
+ let rp=0,eq=0;const zr=z.map(r=>{const e=econ(...r);rp+=e.rp;eq+=e.eq;return e.rp});
+ let a=0,b=0;for(const k of PK){const v=g[k]*R;if(v>=5)a++;if(v>=20)b++}
+ return{rp,eq,z,zr,pk5:a*25,pk20:b*25}}
+function full(combo){const n=D.gw*D.gh,f=[0,1,2].map(()=>new Float64Array(n)),tmp=new Float64Array(n);
+ for(let s=0;s<3;s++)for(const [q,mi] of MS().entries()){const m=MD[mi],a=q?tmp:f[s];if(q)a.fill(0);for(const k of combo){const o=k*3+s;for(let t=m.OFF[o];t<m.OFF[o+1];t++)a[m.SI[t]]+=m.SV[t]}if(q)for(let i=0;i<n;i++)if(a[i]>f[s][i])f[s][i]=a[i]}
+ if(st.season!=='Worst')return f[GN.indexOf(st.season)];const g=new Float64Array(n);for(let i=0;i<n;i++)g[i]=Math.max(f[0][i],f[1][i],f[2][i]);return g}
+function init(){
+ PM=bytes(D.parkmask);NS=D.sites.length;
+ {const n=D.gw*D.gh,pos=new Int32Array(n).fill(-1);let c=0;HK=D.hab.map(([i,j])=>{const x=i*D.gw+j;if(pos[x]<0)pos[x]=c++;return pos[x]});PK=[];for(let x=0;x<n;x++)if(PM[x]){if(pos[x]<0)pos[x]=c++;PK.push(pos[x])}K=c;
+  for(const sp of [D.sp,D.sph]){const ib=bytes(sp.idx),SI=new Uint16Array(ib.buffer),vb=bytes(sp.val),SV=new Float64Array(vb.length);for(let i=0;i<vb.length;i++)SV[i]=0.01*Math.pow(10,vb[i]/40);const OFF=sp.off;
+   const ki=[],kv=[],KO=[0];for(let o=0;o<OFF.length-1;o++){for(let t=OFF[o];t<OFF[o+1];t++){const p=pos[SI[t]];if(p>=0){ki.push(p);kv.push(SV[t])}}KO.push(ki.length)}MD.push({SI,SV,OFF,KI:Int32Array.from(ki),KV:Float64Array.from(kv),KO})}
+  AC=[0,1,2,3,4].map(()=>new Float64Array(K))}
+ seg('cur',[['max','Precautionary'],['ideal','Idealised monsoon'],['hycom','HYCOM']],st.cur,v=>{st.cur=v});
+ seg('nm',[[1,'1'],[3,'3'],[5,'5'],[10,'10'],['all','All']],st.n,v=>{st.n=v==='all'?'all':+v;if(st.plc==='pick'||(st.n==='all'&&!['risk','typ'].includes(st.plc)))setSeg('plc',st.plc='risk')});
+ seg('plc',[['risk','High-risk area'],['typ','Anywhere: typical'],['bad','Anywhere: 1-in-10 bad'],['worst','Worst sites'],['pick','Your pick']],st.plc,v=>{st.plc=v;if(v==='pick')setSeg('nm',null)});
+ seg('rate',D.rates.map(r=>[r,`${r} ton/day`]),st.rate,v=>st.rate=+v);
+ seg('season',[['Worst','Worst of year'],['NW','NW monsoon'],['SE','SE monsoon'],['Trans','Transition']],st.season,v=>st.season=v);
+ seg('val',[['low','Low'],['mid','Mid'],['high','High']],st.val,v=>st.val=v);
+ seg('curs',[['NW','NW<span class="l"> monsoon</span>'],['SE','SE<span class="l"> monsoon</span>'],['Trans','Trans<span class="l">ition</span>']],st.curs,v=>{st.curs=v;st.lay.cur=true;const c=document.querySelector('#layers [data-k=cur]');if(c)c.checked=true});
+ $('layers').innerHTML=[['cur','Currents'],['plume','Plume'],['excl','No-mining zone'],['hab','Reef / seagrass'],['wup','Mining zone'],['sites','Test sites'],['mpa','MPA']].map(([k,t])=>`<label><input type="checkbox" data-k="${k}" checked> ${t}</label>`).join('');
+ $('layers').addEventListener('change',e=>{st.lay[e.target.dataset.k]=e.target.checked;draw()});
+ $('l5').oninput=e=>{st.l5=e.target.value/100;upd()};$('l20').oninput=e=>{st.l20=e.target.value/100;upd()};
+ const V=D.params.V;
+ $('vt').innerHTML=[['Coral / reef flat','coral'],['Seagrass','seagrass']].map(([t,k])=>`<tr><td>${t}</td>${['low','mid','high'].map(l=>`<td>${V[k+'_'+l].toFixed(0)}</td>`).join('')}</tr>`).join('');
+ new ResizeObserver(draw).observe($('fig'));upd();
+}
+function setSeg(id,v){$(id).querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x.dataset.v==String(v)))}
+function seg(id,opts,cur,cb){const el=$(id);el.innerHTML=opts.map(([v,t])=>`<button data-v="${v}" aria-pressed="${v==cur}">${t}</button>`).join('');
+ el.onclick=e=>{const b=e.target.closest('button');if(!b)return;el.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b));cb(b.dataset.v);upd()}}
+function econ(c5,c20,s5,s20){const V=D.params.V;const cl=c5*st.l5+c20*st.l20,sl=s5*st.l5+s20*st.l20;return{eq:cl+sl,rp:(cl*V['coral_'+st.val]+sl*V['seagrass_'+st.val])/1000}}
+function upd(){
+ if(!D)return;
+ $('l5v').textContent=Math.round(st.l5*100)+' %';$('l20v').textContent=Math.round(st.l20*100)+' %';
+ const cur=st.cur;st.cur='max';const one=[];for(let k=0;k<NS;k++)one.push(met([k]));
+ let combo=[],share=null;const n=st.n,PL={risk:'in the high-risk area',typ:'anywhere, typical layout',bad:'anywhere, 1-in-10 bad layout',worst:'on the worst sites'};
+ const risk=st.risk=[...Array(NS).keys()].filter(k=>one[k].pk5>0);
+ if(st.plc==='risk'){if(n==='all'||n>=risk.length)combo=risk.slice();else{const L=lay(n,risk,165),M=L.map(met),o=[...M.keys()].sort((a,b)=>M[a].rp-M[b].rp);combo=L[o[Math.floor(.5*(o.length-1))]]}}
+ else if(n==='all')combo=[...Array(NS).keys()];
+ else if(st.plc==='pick')combo=[...st.pick].sort((a,b)=>a-b);
+ else if(st.plc==='worst')combo=[...Array(NS).keys()].sort((a,b)=>one[b].rp-one[a].rp).slice(0,n).sort((a,b)=>a-b);
+ else{const L=n===1?[...Array(NS).keys()].map(k=>[k]):lay(n),M=n===1?one:L.map(met),o=[...M.keys()].sort((a,b)=>M[a].rp-M[b].rp);combo=L[o[Math.floor((st.plc==='typ'?.5:.9)*(o.length-1))]];share=M.filter(m=>m.pk5>0).length/M.length}
+ st.cur=cur;st.one=cur==='max'?one:[...Array(NS).keys()].map(k=>met([k]));
+ st.combo=new Set(combo);
+ $('lh').textContent=st.plc==='risk'?(n==='all'||n>=risk.length?`All ${risk.length} high-risk sites at once`:`${n} mine${n>1?'s':''} at once, ${PL.risk}`):n==='all'?'All 103 test sites at once (theoretical)':st.plc==='pick'?`Your pick: ${combo.length} mine${combo.length==1?'':'s'}`:`${n} mine${n>1?'s':''} at once, ${PL[st.plc]}`;
+ $('plcnote').textContent=st.plc==='risk'?`High-risk area = the ${risk.length} of 103 test sites that push park waters above 5 mg/L at ${st.rate} ton/day under either set of currents (the proposed no-mining zone). ${n==='all'||n>=risk.length?'All of them are mined here.':'Middle result of 300 random layouts of '+n+' mines inside it.'} Mines stay on the same sites whatever currents you choose; the currents only change where the mud goes.`:n==='all'?'Theoretical ceiling only: no plan would mine every test site together.':{typ:`The middle result of ${n===1?'all 103 single test sites':'300 random layouts of '+n+' mines'} in the mining zone.`,bad:`The 90th percentile of the same ${n===1?'103 sites':'300 random layouts'}: 1 layout in 10 is worse.`,worst:`The ${n===1?'test site':n+' test sites'} that do the most damage on their own, mined together.`,pick:'Tap test sites on the map to add or remove them.'}[st.plc];
+ $('plc').querySelectorAll('button').forEach(b=>b.disabled=n==='all'&&!['risk','typ'].includes(b.dataset.v));
+ $('share').textContent=share==null?'':`${Math.round(share*100)} % of ${n===1?'the 103 single sites':'300 random layouts'} push sediment in park waters above 5 mg/L at this rate and season.`;
+ const m=combo.length?met(combo):{rp:0,eq:0,z:[[0,0,0,0],[0,0,0,0],[0,0,0,0]],zr:[0,0,0],pk5:0,pk20:0};
+ const names=['Inside the park','Marine Protected Areas','Other coast'];
+ $('tb').innerHTML=m.z.map((r,ix)=>`<tr><td>${names[ix]}</td><td>${r[0]+r[2]} ha</td><td>${r[1]+r[3]} ha</td><td>${m.zr[ix].toFixed(1)}</td></tr>`).join('');
+ $('annual').textContent=fmtRp(m.rp);$('npv').textContent=fmtRp(m.rp*D.params.AF);$('eqha').textContent=Math.round(m.eq)+' ha';$('pk5').textContent=m.pk5+' ha';$('pk20').textContent=m.pk20+' ha';
+ $('scen').textContent=`${st.rate} ton/day of fines per mine · ${$('season').querySelector('[aria-pressed=true]').textContent} · ${$('cur').querySelector('[aria-pressed=true]').textContent} currents`;
+ $('valnote').textContent=`Coral Rp ${D.params.V['coral_'+st.val].toFixed(0)} M, seagrass Rp ${D.params.V['seagrass_'+st.val].toFixed(0)} M per ha per year`;
+ st.F=combo.length?full(combo):null;
+ siteCard();draw();
+}
+const W=10500,Hh=9000;
+function view(){const c=$('cv'),w=c.clientWidth,h=c.clientHeight,s=Math.min(w/W,h/Hh)*st.k;return{w,h,s,x0:(w-W*s)/2+st.ox,y0:(h-Hh*s)/2+st.oy}}
+function P(v,x,y){return[v.x0+x*v.s,v.y0+(Hh-y)*v.s]}
+function path(ctx,v,rings){ctx.beginPath();for(const r of rings){r.forEach(([x,y],i)=>{const[p,q]=P(v,x,y);i?ctx.lineTo(p,q):ctx.moveTo(p,q)});ctx.closePath()}}
+const CL=[[0,'#ffffff','No risk to park, or not mined'],[1,'#ffe14d','25–75 ha'],[100,'#ff9a1f','100–175 ha'],[200,'#ff3b30','200–275 ha'],[300,'#d61aff','300 ha or more']];
+function col(x){let c=CL[0][1];for(const [t,cc] of CL)if(x>=t)c=cc;return c}
+function draw(){
+ if(!D)return;const c=$('cv'),dpr=devicePixelRatio||1,v=view();c.width=v.w*dpr;c.height=v.h*dpr;const ctx=c.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);
+ const cs=getComputedStyle(document.documentElement),cv=k=>cs.getPropertyValue(k).trim();
+ ctx.fillStyle='#14324a';ctx.fillRect(0,0,v.w,v.h);
+ if(SAT){const[a,b]=P(v,0,Hh);ctx.imageSmoothingEnabled=true;ctx.drawImage(SAT,a,b,W*v.s,Hh*v.s)}
+ ctx.save();ctx.beginPath();ctx.rect(0,0,v.w,v.h);for(const r of D.geo.land){r.forEach(([x,y],i)=>{const[p,q]=P(v,x,y);i?ctx.lineTo(p,q):ctx.moveTo(p,q)});ctx.closePath()}ctx.clip('evenodd');
+ if(st.lay.wup){path(ctx,v,D.geo.wup);ctx.fillStyle='rgba(242,193,78,.22)';ctx.fill('evenodd');ctx.strokeStyle='rgba(242,193,78,.9)';ctx.lineWidth=1.2;ctx.stroke()}
+ if(st.lay.hab){ctx.fillStyle=cv('--hab');const cz=50*v.s;for(const [i,j,c2,s2] of D.hab){const a=(c2+s2)/25;const[p,q]=P(v,j*50,Hh-i*50);ctx.globalAlpha=Math.min(.95,.45+a);ctx.fillRect(p,q,cz,cz)}ctx.globalAlpha=1}
+ ctx.restore();
+ path(ctx,v,D.geo.park);ctx.fillStyle='rgba(60,200,110,.16)';ctx.fill('evenodd');
+ path(ctx,v,D.geo.parkland);ctx.fillStyle='rgba(46,180,90,.38)';ctx.fill('evenodd');
+
+ if(RH){const w=1600,h=w*RH.height/RH.width,cx=4220,cy=3700;const[a,b]=P(v,cx-w/2,cy+h/2);ctx.globalAlpha=1;ctx.drawImage(RH,a,b,w*v.s,h*v.s);ctx.globalAlpha=1}
+ path(ctx,v,D.geo.mine);ctx.fillStyle='#8a2be2';ctx.fill();
+ if(st.lay.excl){path(ctx,v,D.geo.excl_prec);ctx.fillStyle='rgba(255,255,255,.10)';ctx.fill('evenodd');ctx.setLineDash([7,5]);ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();ctx.setLineDash([]);
+  path(ctx,v,D.geo.excl_core);ctx.fillStyle='rgba(255,255,255,.28)';ctx.fill('evenodd');ctx.strokeStyle='#fff';ctx.lineWidth=3;ctx.stroke()}
+ if(st.lay.plume&&st.F){const g=st.F,R=st.rate/100,o=document.createElement('canvas');o.width=D.gw;o.height=D.gh;const ox=o.getContext('2d'),im=ox.createImageData(D.gw,D.gh);
+  for(let i=0;i<g.length;i++){const mv=g[i]*R;if(mv<0.5)continue;const c=mv>=20?[150,0,20,235]:mv>=5?[235,50,30,215]:mv>=2?[255,150,40,185]:[255,230,120,140];im.data.set(c,i*4)}
+  ox.putImageData(im,0,0);ctx.imageSmoothingEnabled=false;const[a,b]=P(v,0,Hh);ctx.drawImage(o,a,b,W*v.s,Hh*v.s);ctx.imageSmoothingEnabled=true;
+  const cz=50*v.s;let n5=0,n20=0;ctx.lineWidth=Math.max(1.5,cz*0.12);
+  for(let i=0;i<g.length;i++){if(!PM[i])continue;const mv=g[i]*R;if(mv<5)continue;const r=Math.floor(i/D.gw),c=i%D.gw;const[p,q]=P(v,c*50,Hh-r*50);
+   if(mv>=20){ctx.fillStyle='rgba(255,43,214,.55)';ctx.fillRect(p,q,cz,cz);n20++}ctx.strokeStyle='#ff2bd6';ctx.strokeRect(p+ctx.lineWidth/2,q+ctx.lineWidth/2,cz-ctx.lineWidth,cz-ctx.lineWidth);n5++}
+  SP=[n5,n20]}
+ if(st.lay.mpa){ctx.font='600 12px Inter,sans-serif';for(const m of D.geo.mpa){path(ctx,v,m.r);ctx.strokeStyle=cv('--mpa');ctx.lineWidth=2;ctx.stroke();const[p,q]=P(v,m.cx,m.cy);ctx.fillStyle='#fff';ctx.fillText('MPA '+m.id,p+6,q-4)}}
+ if(st.lay.sites){const rr=Math.max(7,Math.min(13,6+v.s*60));ctx.textAlign='center';ctx.textBaseline='middle';ctx.font=`700 ${Math.round(rr*0.95)}px Inter,sans-serif`;
+  for(const [ix,s] of D.sites.entries()){const risk=st.one[ix]?st.one[ix].pk5:0,act=st.plc==='pick'||st.combo.has(ix),tot=act?risk:0;const[p,q]=P(v,s.x,s.y);const hv=ix===st.hover,inC=st.combo.has(ix);ctx.globalAlpha=st.plc==='pick'&&!inC&&st.combo.size?.6:1;
+   if(inC){ctx.beginPath();ctx.arc(p,q,(tot<1?6:rr)+5,0,7);ctx.lineWidth=3.5;ctx.strokeStyle='#fff';ctx.stroke();ctx.lineWidth=1.5;ctx.strokeStyle='#000';ctx.beginPath();ctx.arc(p,q,(tot<1?6:rr)+7,0,7);ctx.stroke()}
+   if(tot<1){ctx.beginPath();ctx.arc(p,q,hv||inC?6:3.5,0,7);ctx.fillStyle='rgba(255,255,255,.85)';ctx.fill();ctx.lineWidth=1;ctx.strokeStyle='#000';ctx.stroke();ctx.globalAlpha=1;continue}
+   ctx.beginPath();ctx.arc(p,q,hv?rr+3:rr,0,7);ctx.fillStyle=col(tot);ctx.fill();ctx.lineWidth=hv?3:2;ctx.strokeStyle='#111';ctx.stroke();
+   }
+  ctx.globalAlpha=1;
+  ctx.textAlign='start';ctx.textBaseline='alphabetic'}
+ ctx.fillStyle='#fff';ctx.font='600 13px Inter,sans-serif';for(const o of D.outlets){const[p,q]=P(v,o.x,o.y);ctx.beginPath();ctx.moveTo(p,q+7);ctx.lineTo(p-6,q-4);ctx.lineTo(p+6,q-4);ctx.closePath();ctx.fillStyle='#6a3d9a';ctx.fill();ctx.fillStyle='#fff'}
+ const[sx,sy]=P(v,500,300);ctx.fillStyle='#fff';ctx.fillRect(sx,sy-4,1000*v.s,4);ctx.font='12px Inter,sans-serif';ctx.fillText('10 km',sx,sy-8);
+}
+function siteCard(){const el=$('site');if(st.hover==null){el.innerHTML=st.plc==='pick'?'Tap test sites on the map to add them to your scenario.':'Hover or tap a test site to see what mining only there would cost.';return}
+ const s=D.sites[st.hover],r=s.r[st.rate],e=st.one[st.hover],r0=r;
+ el.innerHTML=`<h3 style="margin-bottom:6px">Hypothetical test site ${st.hover} · ${s.d} km from park</h3>Mining only here at ${st.rate} ton/day (${$('season').querySelector('[aria-pressed=true]').textContent.toLowerCase()}): park waters above 5 mg/L ${e.pk5} ha (above 20: ${e.pk20} ha).<br><b>${fmtRp(e.rp)} per year</b> · ${fmtRp(e.rp*D.params.AF)} over 25 years.${st.combo.has(st.hover)?' <b>Mined in this scenario.</b>':''}${st.plc==='pick'?' Tap to '+(st.pick.has(st.hover)?'remove it from':'add it to')+' your pick.':''}`}
+const cvs=$('cv');let drag=null;
+cvs.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY,ox:st.ox,oy:st.oy};cvs.setPointerCapture(e.pointerId)});
+cvs.addEventListener('pointerup',e=>{const moved=drag&&Math.hypot(e.clientX-drag.x,e.clientY-drag.y)>4;drag=null;if(!moved){const b=pick(e);if(b!=null&&st.plc==='pick'&&st.n!=='all'){st.pick.has(b)?st.pick.delete(b):st.pick.add(b);upd()}}});
+cvs.addEventListener('pointermove',e=>{if(!D)return;if(drag){st.ox=drag.ox+e.clientX-drag.x;st.oy=drag.oy+e.clientY-drag.y;draw();return}pick(e)});
+function pick(e){if(!D)return;
+ const b=cvs.getBoundingClientRect(),mx=e.clientX-b.left,my=e.clientY-b.top,v=view();let best=null,bd=14;
+ if(st.lay.sites)D.sites.forEach((s,i)=>{const[p,q]=P(v,s.x,s.y),dd=Math.hypot(p-mx,q-my);if(dd<bd){bd=dd;best=i}});
+ const tip=$('tip');if(best!=null){const s=D.sites[best],r=s.r[st.rate];tip.style.display='block';tip.style.left=Math.min(mx+12,b.width-250)+'px';tip.style.top=(my+12)+'px';
+  tip.innerHTML=`Hypothetical test site ${best} · ${s.d} km out<br>Alone: park waters above 5 mg/L ${st.one[best].pk5} ha${st.combo.has(best)?'<br><b>Mined in this scenario</b>':''}`}else tip.style.display='none';
+ if(best!==st.hover&&best!=null){st.hover=best;siteCard();draw()}return best}
+cvs.addEventListener('wheel',e=>{e.preventDefault();zoomAt(e.deltaY<0?1.25:0.8,e.offsetX,e.offsetY)},{passive:false});
+function zoomAt(f,mx,my){const v=view(),nk=Math.max(1,Math.min(8,st.k*f)),r=nk/st.k;st.ox=mx-(mx-v.w/2-st.ox)*r-v.w/2;st.oy=my-(my-v.h/2-st.oy)*r-v.h/2;st.k=nk;if(nk===1){st.ox=0;st.oy=0}draw()}
+$('zin').onclick=()=>{const v=view();zoomAt(1.4,v.w/2,v.h/2)};$('zout').onclick=()=>{const v=view();zoomAt(1/1.4,v.w/2,v.h/2)};$('zre').onclick=()=>{st.k=1;st.ox=0;st.oy=0;draw()};
+
+// ---- animated ocean currents (HYCOM GOFS 3.1 surface, seasonal means) ----
+let CU=null;fetch('currents.json').then(r=>r.json()).then(d=>{CU=d}).catch(()=>{});
+const cc=$('curcv'),cx=cc.getContext('2d'),RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+let PT=[],lastV='',seaP=null,curS='NW',cyc=0,lbl='',still=0;
+function vel(x,y){const g=CU,fx=(x-g.x0)/g.dx,fy=(y-g.y0)/g.dy,i=Math.floor(fx),j=Math.floor(fy);if(i<0||j<0||i>=g.nx-1||j>=g.ny-1)return null;
+ const S=g.s[curS],U=S.u,V=S.v,a=fx-i,b=fy-j,k=j*g.nx+i,q=[k,k+1,k+g.nx,k+g.nx+1];for(const t of q)if(U[t]==null)return null;
+ const w=[(1-a)*(1-b),a*(1-b),(1-a)*b,a*b];let u=0,v=0;for(let n=0;n<4;n++){u+=U[q[n]]*w[n];v+=V[q[n]]*w[n]}return[u,v]}
+function spawn(p){for(let n=0;n<30;n++){const x=Math.random()*W,y=Math.random()*Hh;if(vel(x,y)){p.x=x;p.y=y;p.age=0;p.life=50+Math.random()*90;return}}p.age=1e9}
+function seaPath(v){const P2=new Path2D();P2.rect(0,0,v.w,v.h);P2.addPath(seaRings(v,D.geo.land));const L2=new Path2D();L2.addPath(seaRings(v,D.geo.parkland));return[P2,L2]}
+function seaRings(v,R){const Q=new Path2D();for(const r of R){r.forEach(([x,y],i)=>{const[p,q]=P(v,x,y);i?Q.lineTo(p,q):Q.moveTo(p,q)});Q.closePath()}return Q}
+function curTick(){requestAnimationFrame(curTick);
+ if(!CU||!D||!st.lay.cur){if(lastV){cx.setTransform(1,0,0,1,0,0);cx.clearRect(0,0,cc.width,cc.height);lastV='';$('curlbl').style.display='none'}return}
+ const v=view(),dpr=devicePixelRatio||1,key=[v.w,v.h,v.s.toFixed(6),v.x0.toFixed(1),v.y0.toFixed(1)].join();
+ if(key!==lastV){cc.width=v.w*dpr;cc.height=v.h*dpr;cx.setTransform(dpr,0,0,dpr,0,0);seaP=seaPath(v);lastV=key;still=0}
+ const s=st.curs;
+ if(s!==curS){curS=s;still=0;cx.clearRect(0,0,v.w,v.h)}
+ $('curlbl').style.display='flex';
+ if(!PT.length)for(let n=0;n<1800;n++){const p={};spawn(p);p.age=Math.random()*p.life;PT.push(p)}
+ if(RM&&still>60)return;still++;
+ cx.save();cx.globalCompositeOperation='destination-out';cx.fillStyle='rgba(0,0,0,.075)';cx.fillRect(0,0,v.w,v.h);cx.restore();
+ cx.save();cx.clip(seaP[0],'evenodd');cx.lineCap='round';
+ const K=140,bins=[[],[],[]];
+ for(const p of PT){const u=vel(p.x,p.y);if(!u||p.age++>p.life){spawn(p);continue}
+  const nx=p.x+u[0]*K,ny=p.y+u[1]*K,sp=Math.hypot(u[0],u[1]);const[a,b]=P(v,p.x,p.y),[c,d]=P(v,nx,ny);bins[sp<.06?0:sp<.2?1:2].push(a,b,c,d);p.x=nx;p.y=ny}
+ [['rgba(200,235,255,.45)',1],['rgba(225,245,255,.7)',1.3],['rgba(255,255,255,.9)',1.6]].forEach(([col,lw],i)=>{const B=bins[i];if(!B.length)return;cx.strokeStyle=col;cx.lineWidth=lw;cx.beginPath();for(let n=0;n<B.length;n+=4){cx.moveTo(B[n],B[n+1]);cx.lineTo(B[n+2],B[n+3])}cx.stroke()});
+ cx.restore();cx.save();cx.globalCompositeOperation='destination-out';cx.fillStyle='#000';cx.fill(seaP[1],'evenodd');cx.restore()}
+requestAnimationFrame(curTick);
+}
+</script>
+</body>
+</html>
