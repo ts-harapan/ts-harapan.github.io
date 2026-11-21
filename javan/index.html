@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title data-t="t1">Javan rhino recovery simulation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&family=Oxanium:wght@300;400&display=swap" rel="stylesheet">
+<style>
+/* VOICE: a field-station briefing — calm, exact, every number traceable.
+   IDEA: a population-viability console: the census board up top, the scenario bench below.
+   PICTURE: projected rhino numbers under five strategies, plus Desy's calving record against the captive sanctuary.
+   COLOUR and TYPE: site black #0b0d0b, paper ink #f2f1ea, accent orange #e8783f, strategy hues; Oxanium titles, Space Grotesk, Inter, Space Mono labels.
+   LAYOUT: grid header, census cards, breeding timeline, simulator (controls | chart), results table, start-year sweep, methods. */
+:root{color-scheme:dark;--bg:#0b0d0b;--ink:#f2f1ea;--mute:#a3a89d;--line:rgba(242,241,234,.16);--card:#131813;--acc:#e8783f;--c0:#e8783f;--c1:#f2f1ea;--c2:#8dffa8;--c3:#6fb7ff;--c4:#c9a0ff}
+*{box-sizing:border-box;min-width:0}
+html{scroll-padding-top:20px}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Inter,system-ui,sans-serif;overflow-x:clip}
+h1,h2,h3{font-family:"Space Grotesk",Inter,sans-serif;font-weight:600;line-height:1.1;margin:0;text-wrap:balance}
+h2{font-size:clamp(22px,2.4vw,30px);margin-bottom:10px}h3{font-size:17px}
+.band{padding:clamp(22px,3.5vw,48px) max(4vw,16px)}
+.wrap{max-width:1240px;margin:0 auto}
+.strip{position:relative;overflow:hidden;background:radial-gradient(ellipse 70% 120% at 85% 0%,rgba(232,120,63,.22),transparent 60%),radial-gradient(ellipse 50% 90% at 0% 100%,rgba(31,111,168,.25),transparent 60%),#0b0d0b;border-bottom:1px solid rgba(242,241,234,.18);padding-block:clamp(16px,2.2vw,28px)}
+.strip::before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(141,255,168,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(141,255,168,.07) 1px,transparent 1px),linear-gradient(rgba(141,255,168,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(141,255,168,.035) 1px,transparent 1px);background-size:80px 80px,80px 80px,16px 16px,16px 16px;-webkit-mask-image:linear-gradient(180deg,#000 40%,transparent);mask-image:linear-gradient(180deg,#000 40%,transparent);pointer-events:none}
+.strip::after{content:"";position:absolute;left:0;right:0;top:0;height:40%;background:linear-gradient(180deg,transparent,rgba(141,255,168,.07),transparent);animation:scan 6s linear infinite;pointer-events:none}
+@keyframes scan{from{transform:translateY(-100%)}to{transform:translateY(260%)}}
+@media(prefers-reduced-motion:reduce){.strip::after{display:none}}
+.strip .wrap{position:relative;z-index:1}
+.strip h1{font-family:Oxanium,"Space Mono",monospace;font-weight:300;text-transform:uppercase;letter-spacing:.02em;font-size:clamp(26px,3.6vw,48px);line-height:1.04}
+.strip p{color:#cfd3c8;max-width:66ch;margin:12px 0 0;font-size:16px}
+.back{display:inline-block;font:500 12px "Space Grotesk",sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#f2f1ea;text-decoration:none;border:1px solid #f2f1ea;border-radius:999px;padding:10px 16px;margin-bottom:14px;transition:.2s}.back:hover{border-color:var(--acc);color:var(--acc)}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}.topbar .back{margin-bottom:0}.langbtn{background:transparent;min-height:0;font-size:12px;cursor:pointer;margin-left:auto}.langbtn .ls{display:none}.navl{display:flex;flex-wrap:wrap;gap:10px;flex:1 1 0;min-width:0}.langbtn{flex:0 0 auto}.minebtn{border-color:var(--acc);color:var(--acc);margin:0}.nextsim{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px}.nextsim p{margin:6px 0 0;color:#cfd3c8;max-width:60ch}.minebtn:hover{background:var(--acc);color:#10120f}@media(max-width:480px){.topbar{flex-wrap:nowrap;align-items:flex-start}.topbar .back{padding:10px 12px;letter-spacing:.1em}.langbtn .lf{display:none}.langbtn .ls{display:inline}}
+.lab{font:400 12px "Space Mono",ui-monospace,monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}
+.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:22px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px}
+.card .big{font:300 clamp(34px,4.4vw,56px)/1 Oxanium,"Space Mono",monospace;margin:8px 0 8px;white-space:nowrap}
+.card p{margin:0;color:#cfd3c8;font-size:14px}
+.card.hot .big{color:var(--acc)}
+@media(max-width:760px){.cards{grid-template-columns:1fr}}
+.two{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:clamp(18px,3vw,40px);align-items:start}
+@media(max-width:900px){.two{grid-template-columns:1fr}}
+.fig{position:relative}
+#tl{width:100%;height:auto;display:block}
+.note{font-size:13px;color:var(--mute)}
+.prec{display:grid;gap:12px}
+.prec .card h3{margin-bottom:6px}
+.prec .card p{font-size:14px}
+/* simulator */
+.sim{display:grid;grid-template-columns:minmax(280px,360px) minmax(0,1fr);gap:22px;align-items:start}
+@media(max-width:960px){.sim{grid-template-columns:1fr}.sim .out{order:-1}}
+.ctl{display:grid;gap:14px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px}
+.ctl fieldset{border:0;margin:0;padding:0;display:grid;gap:12px}
+.ctl legend{font:600 13px "Space Grotesk",sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--acc);padding:0;margin-bottom:6px}
+.ctl label{font-size:14px;color:#d6d9cf;display:block;margin-bottom:6px}
+.ctl label b{color:var(--ink);font-weight:600}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+button,select{font:inherit;font-size:15px;border-radius:8px;border:1px solid var(--line);background:#0f130f;color:var(--ink);min-height:44px;padding:0 12px;cursor:pointer}
+.seg button{font-size:14px;padding:0 10px}
+.seg button[aria-pressed=true]{background:var(--acc);color:#10120f;border-color:var(--acc)}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+input[type=range]{width:100%;accent-color:var(--acc);height:28px}
+.chk{display:flex;align-items:center;gap:8px;font-size:14px;min-height:32px}
+.chk input{width:18px;height:18px;accent-color:var(--acc)}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;align-items:end}.grid3 .note{display:block;line-height:1.25;margin-bottom:4px}
+.grid3 select{width:100%;padding:0 6px}
+.out{display:grid;gap:14px}
+.startbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px}.startbar .seg button{font-size:15px;padding:0 14px}
+.headline{font:500 clamp(18px,1.8vw,22px)/1.35 "Space Grotesk",sans-serif;margin:0;min-height:3em}
+.headline em{font-style:normal;color:var(--acc)}
+.chart{position:relative;height:clamp(300px,46vh,460px);background:var(--card);border:1px solid var(--line);border-radius:10px}
+.chart svg{position:absolute;inset:0;width:100%;height:100%}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:#d6d9cf}
+.legend span{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.legend .leghd{flex-basis:100%;color:var(--ink);font:600 13px "Space Grotesk",sans-serif;letter-spacing:.04em}
+.legend i{width:18px;height:3px;border-radius:2px;display:inline-block}
+.busy{position:absolute;right:12px;top:10px;font:12px "Space Mono",monospace;color:var(--mute)}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{padding:8px 8px;border-bottom:1px solid var(--line);text-align:right;vertical-align:top}
+th:first-child,td:first-child{text-align:left}
+th{font-weight:600;color:var(--mute);font-size:13px}
+td .sw{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:8px;vertical-align:0}
+.num{white-space:nowrap;font-variant-numeric:tabular-nums}
+.scroll{overflow-x:auto}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:22px}
+.cols p{color:#cfd3c8;font-size:15px}
+a{color:var(--acc)}
+.src li{margin-bottom:6px;font-size:14px;color:#cfd3c8}
+@media(max-width:600px){table{font-size:13px}.stack thead{display:none}.stack tr{display:grid;padding-block:10px;border-bottom:1px solid var(--line)}.stack td{display:flow-root;border:0;padding:3px 0;padding-inline-start:9.5em;text-align:start}.stack td:first-child{padding-inline-start:0;font-weight:600}.stack td:first-child::before{content:none}.stack td::before{content:attr(data-l);float:inline-start;width:9em;margin-inline-start:-9.5em;color:var(--mute);white-space:normal}}
+.rdot{cursor:pointer;outline:none}.rdot .ryr{opacity:0;transition:opacity .15s;pointer-events:none}.rdot:hover .ryr,.rdot:focus .ryr{opacity:1}
+</style>
+</head>
+<body>
+<header class="band strip"><div class="wrap">
+<div class="topbar"><div class="navl"><a class="back" href="../index.html" data-t="t0">← Back to Main Page</a></div><button type="button" class="back langbtn" id="langbtn" lang="id"><span class="lf">Bahasa Indonesia</span><span class="ls">Bahasa</span></button></div>
+<h1 data-t="t1">Javan rhino recovery simulation</h1>
+<p data-t="t2">How many Javan rhinos are left decides what to do next. This model projects the Ujung Kulon population from two starting counts and compares full protection, habitat recovery and captive breeding, including when to start and which mitochondrial haplotypes to catch.</p>
+</div></header>
+
+<main>
+<section class="band"><div class="wrap">
+<div class="lab" data-t="t3">How many are left? Two counts in use</div>
+<div class="cards">
+ <div class="card"><div class="lab" data-t="t4">Government, 2025</div><div class="big">87–100</div><p data-t="t5">Ministry of Forestry estimate for Ujung Kulon. Modelled at the low end, 87.</p></div>
+ <div class="card hot"><div class="lab">IUCN / IRF, 2025</div><div class="big">≈50</div><p data-t="t6">76 counted in 2022, minus 26 rhinos (mostly males) that poachers confessed to killing in 2019–2023.</p></div>
+</div>
+</div></section>
+
+<section class="band" style="padding-top:0"><div class="wrap two">
+ <div>
+  <h2 data-t="t7">How fast can a female breed?</h2>
+  <p style="color:#cfd3c8;margin-top:0" data-t="t8">Desy, a wild female in Ujung Kulon, has had five calves since 2013, one every 3.4 years on average. That matches the 33% yearly breeding rate used in the 2016 PHVA. At the Sumatran Rhino Sanctuary in Way Kambas, the most successful mother, Ratu, had three calves in 2012–2023, one every 5.6 years. Rosa had one calf after eight pregnancy losses, and Delilah, born at the sanctuary, had her first in 2023.</p>
+  <div class="fig scroll"><svg id="tl" style="min-width:560px" viewBox="0 0 720 300" role="img" aria-label="Timeline of calves per mother: Desy in the wild versus Ratu, Rosa and Delilah at the Sumatran Rhino Sanctuary"></svg></div>
+  <p class="note" style="display:flex;flex-wrap:wrap;gap:6px 18px;margin-bottom:4px"><span><i style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#e8783f;margin-right:6px"></i><span data-t="t9">Javan rhino</span></span><span><i style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#6fb7ff;margin-right:6px"></i><span data-t="t10">Sumatran rhino</span></span></p>
+  <p class="note" style="margin-top:0" data-t="t11">There is no record of Javan rhinos breeding in captivity, so the model uses the Sumatran Rhino Sanctuary (SRS) record for captive breeding. Model rates: wild ≈ 0.33 births per adult female per year; SRS-like ≈ 0.12 (5 births from 3 mothers over about 42 breeding-age female-years, 2012–2025).</p>
+ </div>
+ <div class="prec">
+  <div class="lab" data-t="t12">Precedents</div>
+  <div class="card"><h3>Nepal: Chitwan → Bardia &amp; Suklaphanta</h3><p data-t="t13">Nepal moved 104 greater one-horned rhinos out of Chitwan in 1986–2023: 91 to Bardia and 11 to Suklaphanta. Bardia's rhinos still fell from 67 to 22 by 2008 during a poaching surge, so more were moved in. <b style="color:#ff4b3e">New sites only grow when protection holds.</b></p></div>
+  <div class="card"><h3>Santiapillai &amp; Suprahman, 1986</h3><p data-t="t14">With 54 rhinos, they advised waiting until the population reached about 80, and starting with free-range breeding of a few animals inside the park complex.</p></div>
+ </div>
+</div></section>
+
+<section class="band" id="sim" style="border-top:1px solid var(--line)"><div class="wrap">
+<h2 data-t="t15">Scenario bench</h2>
+<p class="note" style="margin-top:0" data-t="t16">Each run simulates every rhino, year by year from 2026 to 2126: births, deaths, inbreeding and mitochondrial lineage. The orange line lets poaching continue; the other four assume full protection (no more poaching). 200 runs per strategy; lines show the median of all runs.</p>
+<div class="sim">
+ <form class="ctl" id="ctl" onsubmit="return false">
+  <fieldset><legend data-t="t17">Population</legend>
+   <div><label for="male" data-t="t18">Males in the population: <b id="maleV"></b></label><input type="range" id="male" min="30" max="70" step="1" value="53"></div>
+   <div><label for="h2" data-t="t19">Females carrying haplotype 2: <b id="h2V"></b></label><input type="range" id="h2" min="5" max="50" step="5" value="25"></div>
+   <div><label for="kuk" data-t="t20">Ujung Kulon carrying capacity</label><div class="seg" id="kuk"></div></div>
+  </fieldset>
+  <fieldset><legend data-t="t21">Threats</legend>
+   <div><label data-t="t22">Poaching rate in the poaching scenario (adults killed per year, mostly males). Recent pace: 26 rhinos in 2019–2023, about 7% a year.</label><div class="seg" id="poach"></div></div>
+   <label class="chk"><input type="checkbox" id="cat" checked> <span data-t="t23">Tsunami or disaster (1% a year, kills half) and disease outbreaks (2% a year, kills 10%)</span></label>
+  </fieldset>
+  <fieldset><legend data-t="t24">Captive breeding / second site</legend>
+   <div><label for="start" data-t="t25">Start year</label><select id="start"></select></div>
+   <div><label data-t="t26">Founders caught from Ujung Kulon</label>
+    <div class="grid3"><div><span class="note" data-t="t27">Females, haplotype 1</span><select id="fH1"></select></div><div><span class="note" data-t="t28">Females, haplotype 2</span><select id="fH2"></select></div><div><span class="note" data-t="t29">Males</span><select id="fM"></select></div></div></div>
+   <div><label data-t="t30">Breeding performance at the site</label><div class="seg" id="perf"></div></div>
+   <div><label data-t="t31">Captive breeding site capacity</label><div class="seg" id="k2"></div></div>
+   <div><label for="cap" data-t="t32">Capture mortality per animal: <b id="capV"></b></label><input type="range" id="cap" min="0" max="30" step="5" value="5"></div>
+   <label class="chk"><input type="checkbox" id="exch" checked> <span data-t="t33">Add one Ujung Kulon male every 8 years</span></label>
+  </fieldset>
+  <fieldset><legend data-t="t34">Recovery target</legend><div class="seg" id="tgt"></div><p class="note" style="margin:0" data-t="t35">80: the size Santiapillai &amp; Suprahman (1986) set before any translocation. 100: the size the Asian Rhino Specialist Group recommended for Nepal's new rhino populations.</p></fieldset>
+ </form>
+ <div class="out">
+  <div class="startbar"><span class="lab" data-t="t36">Starting population</span><div class="seg" id="n0"></div></div>
+  <p class="headline" id="head">Running the model…</p>
+  <div class="chart" id="chart"><svg id="cv" aria-label="Projected Javan rhino numbers under five strategies"></svg><span class="busy" id="busy"></span></div>
+  <div class="legend" id="leg"></div>
+  <div class="scroll"><table class="stack"><thead><tr><th data-t="t37">Strategy</th><th data-t="t38">Reaches target</th><th>Median 2050</th><th>Median 2126</th><th data-t="t39">Extinction risk</th><th data-t="t40">Haplotype 2 kept</th><th data-t="t41">Gene diversity kept</th></tr></thead><tbody id="tb"></tbody></table></div>
+  <p class="note" id="tnote"></p>
+ </div>
+</div>
+</div></section>
+
+<section class="band" style="border-top:1px solid var(--line)"><div class="wrap">
+<h2 data-t="t42">When should captive breeding start?</h2>
+<p class="note" style="margin-top:0" data-t="t43">Full protection, habitat recovery and the second site together, with the settings above, changing only the start year.</p>
+<div class="scroll"><table class="stack"><thead><tr><th data-t="t25">Start year</th><th data-t="t44">Founders moved</th><th data-t="t38">Reaches target</th><th>Median 2050</th><th data-t="t45">Second site alive in 2126</th><th data-t="t40">Haplotype 2 kept</th><th data-t="t39">Extinction risk</th></tr></thead><tbody id="sw"><tr><td colspan="7" class="note">Waiting for the main run…</td></tr></tbody></table></div>
+<p class="note" id="swnote"></p>
+</div></section>
+
+<section class="band" style="border-top:1px solid var(--line)"><div class="wrap cols">
+ <div><h2 data-t="t46">What "full protection" means here</h2>
+  <p data-t="t47">In the model it means no rhinos are poached from 2027 onward. In the 2016 PHVA, adult mortality was the parameter with the largest effect on growth, and poaching was the only threat that drove modelled populations extinct. In practice that takes intensive Rhino Protection Unit patrols, camera-trap monitoring that would detect missing animals, secure handling of monitoring data, and support from villages around the park.</p></div>
+ <div><h2 data-t="t48">Haplotypes and sex ratio</h2>
+  <p data-t="t49">Mitochondrial DNA passes only from mother to calf, so a haplotype survives only through its females. If haplotype 2 is rare, losing a few of its females can erase it. The model follows each female line, so you can see whether a strategy keeps haplotype 2. Video-trap records from Ujung Kulon show a slightly male-biased population: 36 males and 32 females among 68 identified rhinos in 2019, a sex ratio of about 1.2 males per female (Putra et al. 2020). The default population is therefore 53% male. With fewer females, fewer calves are born each year, and haplotype 2 rests on even fewer mothers.</p></div>
+ <div><h2 data-t="t50">Model and limits</h2>
+  <p data-t="t51">Parameters follow the 2016 Javan rhino PHVA: first breeding at 7 years, last at 35, 33% of adult females breeding each year (falling to 16% near capacity), mortality of 15% for calves, 2% for ages 1–6 and 4% for adults, 80% of males in the breeding pool, 20% environmental variation and inbreeding depression of 6.29 lethal equivalents (half assumed purged). Run with the PHVA's own settings, it gives about 54 rhinos after 100 years (PHVA 53–56). Poaching removes adults, three times more often males. Because breeding rises as numbers fall, poaching here hurts less than in the PHVA, which found 1% a year gave a 6% extinction risk and 2% a year a 68% risk over 100 years. Numbers are projections for comparing strategies, not forecasts.</p></div>
+</div></section>
+
+<section class="band" style="border-top:1px solid var(--line)"><div class="wrap">
+<h2 data-t="t52">Sources</h2>
+<ol class="src">
+<li data-t="t53">Haryono M., Miller P.S., Lees C. et al. (eds) 2016. <i>Population and Habitat Viability Assessment for the Javan Rhino</i>. IUCN/SSC Conservation Breeding Specialist Group. Source of model parameters.</li>
+<li data-t="t54">Putra W.P.B., Syamsudin M. &amp; Firdaus A.Y. 2020. Population structure analysis of Javan rhinoceros at Ujung Kulon National Park, West Java. <i>Buletin Plasma Nutfah</i> 26(2): 103–108. Source of the 1.2:1 male:female sex ratio (68 rhinos, 2019).</li>
+<li>Santiapillai C. &amp; Suprahman H. 1986. The proposed translocation of the Javan rhinoceros. <i>Biological Conservation</i> 38: 11–19.</li>
+<li data-t="t55">ANTARA, 2025. Ministry of Forestry estimate of 87–100 Javan rhinos; Operation Merah Putih translocation to JRSCA.</li>
+<li data-t="t56">International Rhino Foundation / IUCN SSC Asian Rhino Specialist Group, 2025. Javan rhino estimate falls from 76 to about 50 after 26 rhinos were poached, mostly males.</li>
+<li data-t="t57">The Kathmandu Post, 2026. 104 rhinos translocated from Chitwan, 1986–2023. Thapa K. et al. 2013. <i>Oryx</i> 47: 345–351. Mongabay, 2026. Bardia decline from 67 to 22 by 2008.</li>
+</ol>
+</div></section>
+<section class="band" style="border-top:1px solid var(--line)"><div class="wrap nextsim">
+ <div><div class="lab" data-t="mine0">Also in Ujung Kulon</div><p data-t="mine1">Sea mining off the park's coast is another recent threat. See how its impact could spread with real ocean currents.</p></div>
+ <a class="back minebtn" href="../mining/index.html" data-t="mine">Explore sea mining simulation →</a>
+</div></section>
+</main>
+
+<script>window.I18N={"mine":"Jelajahi simulasi tambang laut →","mine0":"Juga di Ujung Kulon","mine1":"Tambang laut di lepas pantai taman nasional adalah ancaman terbaru lainnya. Lihat bagaimana dampaknya dapat menyebar mengikuti arus laut nyata.","t0": "← Kembali ke Halaman Utama", "t1": "Simulasi pemulihan badak jawa", "t2": "Jumlah badak jawa yang tersisa menentukan langkah selanjutnya. Simulasi ini memproyeksikan populasi Ujung Kulon dari dua angka awal dan membandingkan perlindungan penuh, pemulihan habitat, dan penangkaran JRSCA, termasuk kapan dimulai dan pertimbangan haplotipe mitokondria.", "t3": "Berapa yang tersisa? Dua angka yang digunakan", "t4": "Pemerintah, 2025", "t5": "Perkiraan Kementerian Kehutanan untuk Ujung Kulon. Dimodelkan pada batas bawah, 87.", "t6": "76 individu terhitung pada 2022, dikurangi 26 badak (sebagian besar jantan) yang diakui pemburu telah dibunuh pada 2019–2023.", "t7": "Seberapa cepat betina dapat berkembang biak?", "t8": "Desy, betina liar di Ujung Kulon, telah melahirkan lima anak sejak 2013, rata-rata satu anak setiap 3,4 tahun. Angka ini sesuai dengan laju perkembangbiakan tahunan 33% yang digunakan dalam PHVA 2016. Sedangkan spesies Badak Sumatra di Suaka Rhino Sumatera (SRS) Way Kambas, induk paling berhasil, Ratu, melahirkan tiga anak pada 2012–2023, satu setiap 5,6 tahun. Rosa melahirkan satu anak setelah delapan kali keguguran, dan Delilah, yang lahir di suaka, melahirkan anak pertamanya pada 2023.", "t9": "Badak jawa", "t10": "Badak sumatera", "t11": "Belum ada catatan badak jawa berkembang biak di penangkaran, sehingga model memakai catatan Suaka Rhino Sumatera (SRS) untuk penangkaran. Laju dalam model: liar ≈ 0,33 kelahiran per betina dewasa per tahun; mirip SRS ≈ 0,12 (5 kelahiran dari 3 induk selama sekitar 42 tahun-betina usia kawin, 2012–2025).", "t12": "Preseden", "t13": "Nepal memindahkan 104 badak india bercula satu dari Chitwan pada 1986–2023: 91 ke Bardia dan 11 ke Suklaphanta. Badak di Bardia tetap turun dari 67 menjadi 22 pada 2008 saat lonjakan perburuan, sehingga lebih banyak badak didatangkan. <b style=\"color:#ff4b3e\">Lokasi baru dapat diusulkan jika perlindungan kawasan terjamin.</b>", "t14": "Dengan 54 badak, mereka menyarankan menunggu hingga populasi mencapai sekitar 80, lalu memulai pengembangbiakan semi-alami beberapa individu di dalam kawasan taman nasional.", "t15": "Simulasi skenario", "t16": "Setiap simulasi menghitung setiap badak, tahun demi tahun dari 2026 hingga 2126: kelahiran, kematian, perkawinan sedarah, dan garis keturunan mitokondria. Garis oranye membiarkan perburuan berlanjut; empat garis lainnya mengasumsikan perlindungan penuh (tanpa perburuan lagi). 200 simulasi per strategi; garis menunjukkan median seluruh simulasi.", "t17": "Populasi", "t18": "Jantan dalam populasi: <b id=\"maleV\"></b>", "t19": "Betina pembawa haplotipe 2: <b id=\"h2V\"></b>", "t20": "Daya dukung Ujung Kulon", "t21": "Ancaman", "t22": "Laju perburuan dalam skenario perburuan (individu dewasa dibunuh per tahun, sebagian besar jantan). Laju terkini: 26 badak pada 2019–2023, sekitar 7% per tahun.", "t23": "Tsunami atau bencana (1% per tahun, membunuh separuh populasi) dan wabah penyakit (2% per tahun, membunuh 10%)", "t24": "Penangkaran / habitat kedua", "t25": "Tahun mulai", "t26": "Individu pendiri yang ditangkap dari Ujung Kulon", "t27": "Betina, haplotipe 1", "t28": "Betina, haplotipe 2", "t29": "Jantan", "t30": "Kinerja perkembangbiakan di lokasi", "t31": "Daya tampung lokasi penangkaran", "t32": "Kematian saat penangkapan per individu: <b id=\"capV\"></b>", "t33": "Tambahkan satu jantan dari Ujung Kulon setiap 8 tahun", "t34": "Target pemulihan", "t35": "80: ukuran yang ditetapkan Santiapillai &amp; Suprahman (1986) sebelum translokasi apa pun. 100: ukuran yang direkomendasikan Asian Rhino Specialist Group untuk populasi badak baru di Nepal.", "t36": "Populasi awal", "t37": "Strategi", "t38": "Mencapai target", "t39": "Risiko kepunahan", "t40": "Haplotipe 2 bertahan", "t41": "Keragaman genetik tersisa", "t42": "Kapan penangkaran sebaiknya dimulai?", "t43": "Perlindungan penuh, pemulihan habitat, dan habitat kedua sekaligus, dengan pengaturan di atas, hanya mengubah tahun mulai.", "t44": "Pendiri dipindahkan", "t45": "Habitat kedua bertahan pada 2126", "t46": "Arti \"perlindungan penuh\" di sini", "t47": "Dalam model, ini berarti tidak ada badak yang diburu mulai 2027. Dalam PHVA 2016, kematian individu dewasa adalah parameter yang paling berpengaruh terhadap pertumbuhan, dan perburuan adalah satu-satunya ancaman yang membuat populasi dalam model punah. Dalam praktiknya, ini memerlukan patroli intensif Rhino Protection Unit, pemantauan kamera jebak yang dapat mendeteksi badak yang hilang, pengamanan data pemantauan, dan dukungan desa-desa di sekitar taman nasional.", "t48": "Haplotipe dan rasio jenis kelamin", "t49": "DNA mitokondria hanya diwariskan dari induk ke anak, sehingga suatu haplotipe hanya bertahan melalui betinanya. Jika haplotipe 2 jarang, kehilangan beberapa betinanya dapat menghapusnya. Model ini mengikuti setiap garis keturunan betina, sehingga terlihat apakah suatu strategi mempertahankan haplotipe 2. Rekaman video trap di Ujung Kulon menunjukkan populasi yang sedikit lebih banyak jantan: 36 jantan dan 32 betina dari 68 badak yang teridentifikasi pada 2019, rasio sekitar 1,2 jantan per betina (Putra dkk. 2020). Karena itu, populasi bawaan dalam model terdiri dari 53% jantan. Dengan lebih sedikit betina, lebih sedikit anak yang lahir setiap tahun, dan haplotipe 2 bergantung pada lebih sedikit induk.", "t50": "Model dan keterbatasannya", "t51": "Parameter mengikuti PHVA badak jawa 2016: kawin pertama pada umur 7 tahun, terakhir pada 35 tahun, 33% betina dewasa berkembang biak setiap tahun (turun menjadi 16% saat mendekati daya dukung), kematian 15% untuk anak, 2% untuk umur 1–6 tahun dan 4% untuk dewasa, 80% jantan ikut kawin, variasi lingkungan 20%, dan depresi perkawinan sedarah sebesar 6,29 lethal equivalents (separuhnya diasumsikan telah tersingkir). Dengan pengaturan PHVA sendiri, model menghasilkan sekitar 54 badak setelah 100 tahun (PHVA 53–56). Perburuan menyasar individu dewasa, tiga kali lebih sering jantan. Karena laju kelahiran naik saat jumlah turun, dampak perburuan di sini lebih ringan daripada di PHVA, yang menemukan perburuan 1% per tahun memberi risiko kepunahan 6% dan 2% per tahun memberi risiko 68% dalam 100 tahun. Angka-angka ini adalah proyeksi untuk membandingkan strategi, bukan ramalan.", "t52": "Sumber", "t53": "Haryono M., Miller P.S., Lees C. dkk. (ed.) 2016. <i>Population and Habitat Viability Assessment for the Javan Rhino</i>. IUCN/SSC Conservation Breeding Specialist Group. Sumber parameter model.", "t54": "Putra W.P.B., Syamsudin M. &amp; Firdaus A.Y. 2020. Population structure analysis of Javan rhinoceros at Ujung Kulon National Park, West Java. <i>Buletin Plasma Nutfah</i> 26(2): 103–108. Sumber rasio jantan:betina 1,2:1 (68 badak, 2019).", "t55": "ANTARA, 2025. Perkiraan Kementerian Kehutanan sebanyak 87–100 badak jawa; translokasi Operasi Merah Putih ke JRSCA.", "t56": "International Rhino Foundation / IUCN SSC Asian Rhino Specialist Group, 2025. Perkiraan badak jawa turun dari 76 menjadi sekitar 50 setelah 26 badak diburu, sebagian besar jantan.", "t57": "The Kathmandu Post, 2026. 104 badak ditranslokasi dari Chitwan, 1986–2023. Thapa K. dkk. 2013. <i>Oryx</i> 47: 345–351. Mongabay, 2026. Penurunan di Bardia dari 67 menjadi 22 pada 2008."};</script>
+<script id="pvasrc" type="text/plain">// Javan rhino individual-based PVA (Vortex-style), after Haryono et al. 2016 PHVA parameters.
+// Works in a browser Web Worker and in Node (module.exports).
+var PVA = (function () {
+  function rng(seed) { let a = seed >>> 0; return function () { a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  function norm(R) { let u = 0, v = 0; while (!u) u = R(); v = R(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
+
+  const MAXS = 480; // kinship slots for living animals
+
+  function run(P, seed) {
+    const R = rng(seed);
+    const Y = P.years;
+    const kin = new Float32Array(MAXS * MAXS);
+    const free = []; for (let i = MAXS - 1; i >= 0; i--) free.push(i);
+    const pop = []; // living animals
+    const out = { uk: new Int16Array(Y + 1), s2: new Int16Array(Y + 1), h2: new Uint8Array(Y + 1), gd: [], ext: false, capLost: 0, exLost: 0, founders: 0, foundersH2: 0, overflow: false };
+    function newSlot() { if (!free.length) { out.overflow = true; return -1; } return free.pop(); }
+    function K(a, b) { return kin[a * MAXS + b]; }
+    function setK(a, b, v) { kin[a * MAXS + b] = v; kin[b * MAXS + a] = v; }
+
+    // ---- founders at Ujung Kulon
+    const N0 = P.N0, nM = Math.round(N0 * P.maleFrac), nF = N0 - nM;
+    const nAd = Math.round(N0 * 0.76);
+    function rndAge(adult) { return adult ? 8 + Math.floor(Math.pow(R(), 1.6) * 28) : Math.floor(R() * 8); }
+    const sexes = []; for (let i = 0; i < nM; i++) sexes.push(1); for (let i = 0; i < nF; i++) sexes.push(0);
+    for (let i = sexes.length - 1; i > 0; i--) { const j = Math.floor(R() * (i + 1)); [sexes[i], sexes[j]] = [sexes[j], sexes[i]]; }
+    // females: assign haplotype H2 to a fraction
+    let fIdx = 0; const nH2 = Math.round(nF * P.h2Frac);
+    const hapOrder = []; for (let i = 0; i < nF; i++) hapOrder.push(i < nH2 ? 2 : 1);
+    for (let i = hapOrder.length - 1; i > 0; i--) { const j = Math.floor(R() * (i + 1)); [hapOrder[i], hapOrder[j]] = [hapOrder[j], hapOrder[i]]; }
+    let mIdx = 0; const nMH2 = Math.round(nM * P.h2Frac);
+    for (let i = 0; i < N0; i++) {
+      const s = newSlot(); const sex = sexes[i];
+      const hap = sex ? (mIdx++ < nMH2 ? 2 : 1) : hapOrder[fIdx++];
+      pop.push({ s, sex, age: rndAge(i < nAd), hap, site: 1, F: 0 });
+    }
+    for (const a of pop) for (const b of pop) setK(a.s, b.s, a === b ? 0.5 * (1 + P.F0) : P.k0);
+
+    const Kuk = (y) => (P.Kgain && P.startYear + y >= P.KgainYear ? P.Kuk + P.Kgain : P.Kuk);
+    const pLow = P.pWild, pHigh = P.pWild * 0.485;
+
+    function breed(site, Ksite, pBase) {
+      let N = 0; const fem = [], mal = [];
+      for (const a of pop) if (a.site === site) { N++; if (a.age >= 7 && a.age <= 35) (a.sex ? mal : fem).push(a); }
+      if (!fem.length || !mal.length) return;
+      const base = site === 1 ? pBase : P.second.pBreed;
+      const hi = base * 0.485;
+      let p = base - (base - hi) * Math.pow(Math.min(1, N / Ksite), 4);
+      p *= Math.max(0, 1 + 0.2 * norm(R));
+      // 80% of adult males in the breeding pool
+      const pool = mal.filter(() => R() < 0.8); if (!pool.length) pool.push(mal[Math.floor(R() * mal.length)]);
+      for (const d of fem) {
+        if (R() >= p) continue;
+        const sire = pool[Math.floor(R() * pool.length)];
+        const s = newSlot(); if (s < 0) return;
+        const F = K(d.s, sire.s);
+        for (const x of pop) { const v = 0.5 * (K(d.s, x.s) + K(sire.s, x.s)); kin[s * MAXS + x.s] = v; kin[x.s * MAXS + s] = v; }
+        kin[s * MAXS + s] = 0.5 * (1 + F);
+        pop.push({ s, sex: R() < 0.5 ? 1 : 0, age: -1, hap: d.hap, site, F, born: true });
+      }
+    }
+
+    function kill(i) { const a = pop[i]; free.push(a.s); pop[i] = pop[pop.length - 1]; pop.pop(); }
+
+    function mortality(site, ev, extra) {
+      for (let i = pop.length - 1; i >= 0; i--) {
+        const a = pop[i]; if (a.site !== site) continue;
+        let m;
+        if (a.age < 0) m = 1 - (1 - 0.15 * ev) * Math.exp(-0.5 * P.LE * a.F);
+        else if (a.age < 7) m = 0.02 * ev; else m = 0.04 * ev;
+        if (a.age >= 40) m = 1;
+        m = 1 - (1 - Math.min(1, m)) * (1 - extra);
+        if (R() < m) kill(i);
+      }
+    }
+
+    function poach(site, rate) {
+      if (rate <= 0) return;
+      const ad = []; for (const a of pop) if (a.site === site && a.age >= 5) ad.push(a);
+      let n = 0; for (let i = 0; i < ad.length; i++) if (R() < rate) n++;
+      // male-biased (poachers took mostly males): males 3x more likely to be picked
+      const mw = P.poachMaleW == null ? 3 : P.poachMaleW;
+      while (n-- > 0) {
+        let tot = 0; for (const a of pop) if (a.site === site && a.age >= 5) tot += a.sex ? mw : 1;
+        if (!tot) break; let r = R() * tot;
+        for (let i = 0; i < pop.length; i++) { const a = pop[i]; if (a.site !== site || a.age < 5) continue; r -= a.sex ? mw : 1; if (r <= 0) { kill(i); break; } }
+      }
+    }
+
+    function truncate(site, Ks) {
+      let N = 0; for (const a of pop) if (a.site === site) N++;
+      while (N > Ks) { const idx = []; for (let i = 0; i < pop.length; i++) if (pop[i].site === site) idx.push(i); kill(idx[Math.floor(R() * idx.length)]); N--; }
+    }
+
+    function moveToSecond(pred, n, founder) {
+      let moved = 0;
+      for (let k = 0; k < n; k++) {
+        const cand = []; for (let i = 0; i < pop.length; i++) if (pred(pop[i])) cand.push(i);
+        if (!cand.length) break;
+        const i = cand[Math.floor(R() * cand.length)];
+        if (R() < P.second.capMort) { if (founder) out.capLost++; else out.exLost++; kill(i); continue; }
+        pop[i].site = 2; moved++;
+      }
+      return moved;
+    }
+
+    function gd() { // gene diversity = 1 - mean kinship (incl. self)
+      const n = pop.length; if (!n) return 0; let s = 0;
+      for (const a of pop) for (const b of pop) s += K(a.s, b.s);
+      return 1 - s / (n * n);
+    }
+
+    const S2 = P.second;
+    const count = () => { let u = 0, t = 0, h = 0; for (const a of pop) { if (a.site === 1) u++; else t++; if (a.hap === 2 && a.sex === 0) h = 1; } return [u, t, h]; };
+    let c = count(); out.uk[0] = c[0]; out.s2[0] = c[1]; out.h2[0] = c[2]; out.gd.push(gd());
+
+    for (let y = 1; y <= Y; y++) {
+      const year = P.startYear + y;
+      // establish second site / captive breeding
+      if (S2 && S2.on && year === S2.start) {
+        const ad = (a, sex, hap) => a.site === 1 && a.sex === sex && a.age >= 7 && a.age <= 22 && (hap ? a.hap === hap : true);
+        const m2 = moveToSecond(a => ad(a, 0, 2), S2.fH2, true);
+        const m1 = moveToSecond(a => ad(a, 0, 1), S2.fH1, true);
+        const mm = moveToSecond(a => ad(a, 1, 0), S2.m, true);
+        out.founders = m1 + m2 + mm; out.foundersH2 = m2;
+      }
+      if (S2 && S2.on && S2.exch && year > S2.start && (year - S2.start) % S2.exch === 0) {
+        moveToSecond(a => a.site === 1 && a.sex === 1 && a.age >= 7 && a.age <= 25, 1);
+      }
+      // breeding
+      breed(1, Kuk(y), pLow);
+      if (S2 && S2.on && year >= S2.start) breed(2, S2.K2, S2.pBreed);
+      // mortality with environmental variation and catastrophes
+      for (const site of [1, 2]) {
+        if (site === 2 && !(S2 && S2.on && year >= S2.start)) continue;
+        const ev = Math.max(0, 1 + 0.2 * norm(R));
+        let extra = 0;
+        if (P.disease && R() < 0.02) extra = 1 - (1 - extra) * 0.9;
+        if (site === 1 && P.cat && R() < 0.01) extra = 1 - (1 - extra) * 0.5;
+        if (site === 2 && P.cat2 && R() < 0.01) extra = 1 - (1 - extra) * 0.5;
+        mortality(site, ev, extra);
+      }
+      // poaching
+      const pr = year >= P.protectYear ? P.poachAfter : P.poach;
+      poach(1, pr); if (S2 && S2.on) poach(2, S2.poach || 0);
+      for (const a of pop) a.age++;
+      truncate(1, Kuk(y)); if (S2 && S2.on) truncate(2, S2.K2);
+      c = count(); out.uk[y] = c[0]; out.s2[y] = c[1]; out.h2[y] = c[2];
+      if (y % 10 === 0) out.gd.push(gd());
+      if (!pop.length) { for (let z = y + 1; z <= Y; z++) { out.uk[z] = 0; out.s2[z] = 0; out.h2[z] = 0; } while (out.gd.length < Y / 10 + 1) out.gd.push(0); out.ext = true; break; }
+    }
+    return out;
+  }
+
+  function summarize(runs, P, target) {
+    const Y = P.years, n = runs.length;
+    const med = [], lo = [], hi = [], medUK = [], medS2 = [];
+    const q = (arr, p) => { const s = arr.slice().sort((a, b) => a - b); return s[Math.min(s.length - 1, Math.floor(p * (s.length - 1) + 0.5))]; };
+    let rec = null, below = null, uk100 = null;
+    for (let y = 0; y <= Y; y++) {
+      const tot = runs.map(r => r.uk[y] + r.s2[y]);
+      med.push(q(tot, 0.5)); lo.push(q(tot, 0.1)); hi.push(q(tot, 0.9));
+      medUK.push(q(runs.map(r => r.uk[y]), 0.5)); medS2.push(q(runs.map(r => r.s2[y]), 0.5));
+      if (rec === null && y > 0 && tot.filter(v => v >= target).length / n >= 0.5) rec = P.startYear + y;
+      if (below === null && y > 0 && med[y] < target) below = P.startYear + y;
+      if (uk100 === null && runs.filter(r => r.uk[y] >= 100).length / n >= 0.5) uk100 = P.startYear + y;
+    }
+    const pExt = runs.filter(r => r.ext).length / n;
+    const pH2 = runs.filter(r => r.h2[Y]).length / n;
+    const gd0 = runs.reduce((s, r) => s + r.gd[0], 0) / n;
+    const gdEnd = runs.reduce((s, r) => s + r.gd[r.gd.length - 1], 0) / n;
+    const capLost = runs.reduce((s, r) => s + r.capLost, 0) / n;
+    const founders = runs.reduce((s, r) => s + r.founders, 0) / n;
+    const fH2 = runs.reduce((s, r) => s + r.foundersH2, 0) / n;
+    const at = (yr) => { const y = yr - P.startYear; return y >= 0 && y <= Y ? runs.filter(r => r.uk[y] + r.s2[y] >= target).length / n : null; };
+    const pS2ext = P.second && P.second.on ? runs.filter(r => r.s2[Y] === 0).length / n : null;
+    return { med, lo, hi, medUK, medS2, rec, below, uk100, above0: P.N0 >= target, pExt, pH2, gd0, gdEnd, capLost, founders, fH2, p2050: at(2050), p2075: at(2075), pS2ext, overflow: runs.some(r => r.overflow) };
+  }
+
+  function simulate(P, iters, target, seed0) {
+    const runs = []; for (let i = 0; i < iters; i++) runs.push(run(P, (seed0 || 1) * 7919 + i * 104729));
+    return summarize(runs, P, target);
+  }
+
+  return { run, simulate, summarize };
+})();
+if (typeof module !== 'undefined' && module) module.exports = PVA;
+</script>
+<script>
+{
+const $=id=>document.getElementById(id);
+let LANG='en';try{if(localStorage.getItem('jrLang')==='id')LANG='id'}catch(e){}
+const T=(en,id)=>LANG==='id'?id:en;
+const f1=v=>LANG==='id'?v.toFixed(1).replace('.',','):v.toFixed(1);
+// ---------- breeding timeline: one row per mother
+function drawTL(){
+ const svg=$('tl'),x0=150,x1=700,y0=2012,y1=2027,X=y=>x0+(y-y0)/(y1-y0)*(x1-x0);
+ const rows=[
+  {m:'Desy',sub:T('Wild, Ujung Kulon','Liar, Ujung Kulon'),col:'#e8783f',c:[[2013,'Arjuna'],[2015,'Arum'],[2018,'Hawa'],[2024,'Syauki'],[2026.78,T('Oct 2026','Okt 2026')]]},
+  {m:'Ratu',sub:T('Control, SRS','Kontrol, SRS'),col:'#6fb7ff',c:[[2012.48,'Andatu'],[2016.36,'Delilah'],[2023.75,'Anggi']]},
+  {m:'Rosa',sub:T('Control, SRS','Kontrol, SRS'),col:'#6fb7ff',c:[[2022.23,'Sedah Mirah']]},
+  {m:'Delilah',sub:T('Control, SRS','Kontrol, SRS'),col:'#6fb7ff',c:[[2023.9,'Indra']]}];
+ const top=34,gap=62,H=top+gap*rows.length+16;svg.setAttribute('viewBox',`0 0 720 ${H}`);
+ let h='';
+ for(let y=2012;y<=2026;y+=2){h+=`<line x1="${X(y)}" x2="${X(y)}" y1="14" y2="${H-30}" stroke="rgba(242,241,234,.10)"/><text x="${X(y)}" y="${H-10}" fill="#a3a89d" font-size="12" font-family="Space Mono,monospace" text-anchor="middle">${y}</text>`}
+ rows.forEach((r,k)=>{const cy=top+k*gap+8;
+  if(k===1)h+=`<line x1="0" x2="${x1}" y1="${cy-34}" y2="${cy-34}" stroke="rgba(242,241,234,.18)" stroke-dasharray="3 4"/>`;
+  h+=`<text x="0" y="${cy-2}" fill="#f2f1ea" font-size="14" font-family="Space Grotesk,sans-serif" font-weight="600">${r.m}</text><text x="0" y="${cy+15}" fill="#a3a89d" font-size="12" font-family="Inter,sans-serif">${r.sub}</text>`;
+  h+=`<line x1="${x0}" x2="${x1}" y1="${cy}" y2="${cy}" stroke="${r.col}" stroke-opacity=".45"/>`;
+  r.c.forEach(([y,n],i)=>{h+=`<circle cx="${X(y)}" cy="${cy}" r="8" fill="${r.col}"/><text x="${X(y)}" y="${cy-14}" fill="#f2f1ea" font-size="12" font-family="Inter,sans-serif" text-anchor="${X(y)>660?'end':'middle'}">${n}</text>`});
+ });
+ svg.innerHTML=h;
+}
+drawTL();
+// ---------- controls
+const st={n0:87,male:53,h2:25,kuk:80,poach:0,cat:true,start:2028,fH1:3,fH2:2,fM:3,perf:.33,k2:20,cap:5,exch:true,tgt:80};st.poach=.07;
+function seg(id,opts,key){const el=$(id);el.innerHTML=opts.map(([v,t])=>`<button type="button" data-v="${v}" aria-pressed="${v==st[key]}">${t}</button>`).join('');
+ el.onclick=e=>{const b=e.target.closest('button');if(!b)return;el.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b));st[key]=+b.dataset.v;go()}}
+function segs(){
+seg('n0',[[87,T('Gov. ~87','Pemerintah ~87')],[50,'IUCN ≈50']],'n0');
+seg('kuk',[[60,'60 (PHVA 2015)'],[80,'80'],[100,'100']],'kuk');
+seg('perf',[[.33,T('Wild-like (Desy)','Mirip alam (Desy)')],[.12,T('SRS-like','Mirip SRS')]],'perf');
+seg('k2',[[10,T('10 rhinos','10 badak')],[20,T('20 rhinos','20 badak')]],'k2');
+seg('poach',[[.01,'1% (PHVA)'],[.02,'2% (PHVA)'],[.07,T('7%: recent pace','7%: laju terkini')]],'poach');
+seg('tgt',[[80,'80 (Santiapillai 1986)'],[100,'100 (ASRSG)']],'tgt');}
+segs();
+const opt=(id,a,b,v)=>{$(id).innerHTML=Array.from({length:b-a+1},(_,i)=>`<option${a+i==v?' selected':''}>${a+i}</option>`).join('')};
+$('start').innerHTML=[2027,2028,2029,2030,2032,2035,2040].map(y=>`<option${y==st.start?' selected':''}>${y}</option>`).join('');
+opt('fH1',0,6,3);opt('fH2',0,4,2);opt('fM',1,5,3);
+const lbl=()=>{$('maleV').textContent=st.male+'%';$('h2V').textContent=st.h2+'%';$('capV').textContent=st.cap+'%'};
+[['male','male'],['h2','h2'],['cap','cap']].forEach(([id,k])=>$(id).addEventListener('input',e=>{st[k]=+e.target.value;lbl()}));
+[['male','male'],['h2','h2'],['cap','cap']].forEach(([id,k])=>$(id).addEventListener('change',()=>go()));
+['start','fH1','fH2','fM'].forEach(id=>$(id).addEventListener('change',e=>{st[id]=+e.target.value;go()}));
+$('cat').addEventListener('change',e=>{st.cat=e.target.checked;go()});
+$('exch').addEventListener('change',e=>{st.exch=e.target.checked;go()});
+lbl();
+
+const STR=[
+ {k:'po',en:'Poaching continues, no other action',id:'Perburuan berlanjut, tanpa tindakan lain',c:'var(--c0)',hex:'#e8783f'},
+ {k:'fp',en:'Full protection only',id:'Perlindungan penuh saja',c:'var(--c1)',hex:'#f2f1ea'},
+ {k:'hb',en:'Protection + habitat (+20 capacity from 2030)',id:'Perlindungan + habitat (+20 daya dukung mulai 2030)',c:'var(--c2)',hex:'#8dffa8'},
+ {k:'cb',en:'Protection + captive breeding',id:'Perlindungan + penangkaran',c:'var(--c3)',hex:'#6fb7ff'},
+ {k:'all',en:'Protection + habitat + captive breeding',id:'Perlindungan + habitat + penangkaran',c:'var(--c4)',hex:'#c9a0ff'}];
+STR.forEach(s=>Object.defineProperty(s,'name',{get(){return T(s.en,s.id)}}));
+function legend(){$('leg').innerHTML='<b class="leghd">'+T('Scenario','Skenario')+'</b>'+STR.map(s=>`<span><i style="background:${s.hex}"></i>${s.name}</span>`).join('')+'<span><i style="background:repeating-linear-gradient(90deg,#a3a89d 0 4px,transparent 4px 8px)"></i>Target</span><span><i style="background:rgba(201,160,255,.35);height:10px"></i>'+T('10–90% of runs, all three actions','10–90% simulasi, ketiga tindakan')+'</span>';}
+legend();
+
+function params(kind,start){
+ const Kuk=Math.max(st.kuk,st.n0);
+ const P={N0:st.n0,maleFrac:st.male/100,h2Frac:st.h2/100,k0:0.0255,F0:0,Kuk,pWild:.33,LE:6.29,poach:st.poach,poachAfter:st.poach,protectYear:9999,cat:st.cat,cat2:st.cat,disease:st.cat,years:100,startYear:2026,second:null,Kgain:0,KgainYear:2030};
+ if(kind!=='po'){P.protectYear=2027;P.poachAfter=0}
+ if(kind==='hb'||kind==='all'){P.Kgain=20}
+ if(kind==='cb'||kind==='all'){P.second={on:true,start:start||st.start,fH1:st.fH1,fH2:st.fH2,m:st.fM,K2:st.k2,pBreed:st.perf,capMort:st.cap/100,exch:st.exch?8:0,poach:0}}
+ return P;
+}
+// ---------- worker
+let W=null,job=0;
+try{W=new Worker(URL.createObjectURL(new Blob([$('pvasrc').textContent+`
+onmessage=e=>{const {id,list,iters,target}=e.data;for(const it of list){const s=PVA.simulate(it.P,iters,target,it.seed);postMessage({id,key:it.key,s})}postMessage({id,done:true})}`],{type:'text/javascript'})));W.onerror=()=>{W=null;run()}}catch(e){W=null}
+let PVAlocal=null;
+function localRun(list,iters,target,cb,done){if(!PVAlocal){const f=new Function('const module=undefined;'+$('pvasrc').textContent+';return PVA;');PVAlocal=f.call({})}
+ let i=0;const step=()=>{if(i>=list.length){done();return}const it=list[i++];cb(it.key,PVAlocal.simulate(it.P,iters,target,it.seed));setTimeout(step,0)};step()}
+function runJobs(list,iters,target,cb,done){const id=++job;
+ if(W){W.onmessage=e=>{if(e.data.id!==job)return;if(e.data.done)done();else cb(e.data.key,e.data.s)};W.postMessage({id,list,iters,target})}
+ else localRun(list,iters,target,(k,s)=>{if(id===job)cb(k,s)},()=>{if(id===job)done()})}
+
+let R={},timer=null,DONE=false,SW={},SWdone=false;
+function go(){clearTimeout(timer);timer=setTimeout(run,150)}
+function run(){
+ R={};$('swnote').textContent='';$('busy').textContent=T('running…','berjalan…');$('head').textContent=T('Running the model…','Menjalankan model…');DONE=false;SW={};SWdone=false;
+ $('sw').innerHTML='<tr><td colspan="7" class="note">'+T('Waiting for the main run…','Menunggu simulasi utama…')+'</td></tr>';
+ const SEED={po:11,fp:12,hb:13,cb:14,all:15};const list=STR.map(s=>({key:s.k,P:params(s.k),seed:SEED[s.k]}));
+ runJobs(list,200,st.tgt,(k,s)=>{R[k]=s;draw();table()},()=>{$('busy').textContent='';DONE=true;headline();sweep()});
+}
+// ---------- chart
+function first100(){let b=null;for(const s2 of STR){const r=R[s2.k];if(!r)continue;const i=r.med.findIndex(v=>v>=100);if(i>0&&(!b||2026+i<b.yr))b={yr:2026+i,k:s2.k,name:s2.name}}return b}
+function draw(){
+ const svg=$('cv'),W=svg.clientWidth,H=svg.clientHeight;if(!W)return;
+ const pad={l:58,r:14,t:16,b:46},Y0=2026,Y1=2126;
+ let maxV=st.tgt*1.15;for(const k in R)for(const v of R[k].hi)maxV=Math.max(maxV,v);maxV=Math.ceil(maxV/20)*20;
+ const X=y=>pad.l+(y-Y0)/(Y1-Y0)*(W-pad.l-pad.r),Yv=v=>H-pad.b-(v/maxV)*(H-pad.t-pad.b);
+ let h='';const small=W<520;
+ for(let v=0;v<=maxV;v+=maxV>160?40:20)h+=`<line x1="${pad.l}" x2="${W-pad.r}" y1="${Yv(v)}" y2="${Yv(v)}" stroke="rgba(242,241,234,.08)"/><text x="${pad.l-6}" y="${Yv(v)+4}" fill="#a3a89d" font-size="11" text-anchor="end" font-family="Space Mono,monospace">${v}</text>`;
+ for(let y=2026;y<=2126;y+=small?25:20)h+=`<text x="${X(y)}" y="${H-pad.b+18}" fill="#a3a89d" font-size="11" text-anchor="middle" font-family="Space Mono,monospace">${y}</text>`;
+ h+=`<text x="${(pad.l+W-pad.r)/2}" y="${H-6}" fill="#a3a89d" font-size="12" text-anchor="middle" font-family="Space Mono,monospace">${T('Year','Tahun')}</text><text transform="translate(14,${(pad.t+H-pad.b)/2}) rotate(-90)" fill="#a3a89d" font-size="12" text-anchor="middle" font-family="Space Mono,monospace">${T('Individuals','Jumlah individu')}</text>`;
+ h+=`<line x1="${pad.l}" x2="${W-pad.r}" y1="${Yv(st.tgt)}" y2="${Yv(st.tgt)}" stroke="#a3a89d" stroke-dasharray="4 4"/><text x="${W-pad.r-4}" y="${Yv(st.tgt)-6}" fill="#a3a89d" font-size="11" text-anchor="end" font-family="Space Mono,monospace">${T('target','target')} ${st.tgt}</text>`;
+ const best=R.all;if(best){let a='',b='';best.hi.forEach((v,i)=>a+=`${i?'L':'M'}${X(Y0+i).toFixed(1)},${Yv(v).toFixed(1)}`);for(let i=best.lo.length-1;i>=0;i--)b+=`L${X(Y0+i).toFixed(1)},${Yv(best.lo[i]).toFixed(1)}`;h+=`<path d="${a}${b}Z" fill="rgba(201,160,255,.12)"/>`}
+ for(const s of STR){const r=R[s.k];if(!r)continue;let d='';r.med.forEach((v,i)=>d+=`${i?'L':'M'}${X(Y0+i).toFixed(1)},${Yv(v).toFixed(1)}`);h+=`<path d="${d}" fill="none" stroke="${s.hex}" stroke-width="${s.k==='all'?3:2}" stroke-linejoin="round"/>`;
+  if(s.k==='cb'||s.k==='all'){/* founders mark */}}
+ let lastLX=-1e9;const dots=[];for(const s2 of STR){const r=R[s2.k];if(!r)continue;const k=r.med.findIndex(v=>v>=100);if(k>0)dots.push({k,yr:2026+k,cx:X(2026+k),cy:Yv(r.med[k]),name:s2.name})}
+ dots.sort((a,b)=>a.yr-b.yr);
+ dots.forEach((d,i)=>{h+=`<g class="rdot" tabindex="0"><circle cx="${d.cx}" cy="${d.cy}" r="13" fill="transparent"/><circle cx="${d.cx}" cy="${d.cy}" r="5" fill="#ff4b3e" stroke="#0b0d0b" stroke-width="1.5"/><text class="ryr" x="${d.cx}" y="${d.cy+22}" fill="#ff4b3e" font-size="12" font-weight="700" font-family="Space Mono,monospace" text-anchor="middle" paint-order="stroke" stroke="#131813" stroke-width="4">${d.yr}</text></g>`;
+  const end=d.cx-pad.l>165||d.cx>W-190,tx=end?d.cx-8:d.cx+8,an=end?'end':'start',halo='paint-order="stroke" stroke="#131813" stroke-width="4" stroke-linejoin="round"';
+  if(i===0){h+=`<text x="${tx}" y="${d.cy-(end?12:30)}" fill="#ff4b3e" font-size="11" font-family="Space Mono,monospace" text-anchor="${an}" ${halo}>${T('rhino reintroduction possible','reintroduksi badak memungkinkan')}</text>`;lastLX=d.cx+170}
+  });
+ h+=`<line x1="${X(st.start)}\" x2="${X(st.start)}" y1="${pad.t}" y2="${H-pad.b}" stroke="rgba(111,183,255,.35)" stroke-dasharray="2 4"/><text x="${X(st.start)+4}" y="${pad.t+10}" fill="#6fb7ff" font-size="11" font-family="Space Mono,monospace">${T('capture','penangkapan')} ${st.start}</text>`;
+ svg.innerHTML=h;
+}
+new ResizeObserver(draw).observe($('chart'));
+const recTxt=r=>r.above0?(r.below?T(`Above now; falls below in ${r.below}`,`Di atas sekarang; turun di bawah pada ${r.below}`):T('Above now; stays above','Di atas sekarang; tetap di atas')):(r.rec?r.rec:T('Not by 2126','Tidak sampai 2126'));
+const pct=v=>v==null?'–':(v<0.005&&v>0?'<1%':Math.round(v*100)+'%');
+function table(){
+ $('tb').innerHTML=STR.map(s=>{const r=R[s.k];if(!r)return `<tr><td><span class="sw" style="background:${s.hex}"></span>${s.name}</td><td colspan="6" class="note">${T('running…','berjalan…')}</td></tr>`;
+  return `<tr><td><span class="sw" style="background:${s.hex}"></span>${s.name}</td><td class="num" data-l="${T('Reaches target','Mencapai target')}">${recTxt(r)}</td><td class="num" data-l="Median 2050">${r.med[24]}</td><td class="num" data-l="Median 2126">${r.med[100]}</td><td class="num" data-l="${T('Extinction risk','Risiko kepunahan')}">${pct(r.pExt)}</td><td class="num" data-l="${T('Haplotype 2 kept','Haplotipe 2 bertahan')}">${pct(r.pH2)}</td><td class="num" data-l="${T('Gene diversity kept','Keragaman genetik tersisa')}">${r.gd0?Math.round(r.gdEnd/r.gd0*100)+'%':'–'}</td></tr>`}).join('');
+ const cb=R.cb;$('tnote').textContent=cb?T(`Captive breeding: on average ${cb.founders.toFixed(1)} of ${st.fH1+st.fH2+st.fM} founders reach the site and ${cb.capLost.toFixed(1)} die at capture; ${cb.fH2.toFixed(1)} of them are haplotype-2 females (fewer if not enough are of breeding age). "Reaches target" is the first year at least half the runs hold ${st.tgt} or more rhinos across both sites. Capacity at Ujung Kulon is set to at least the starting count (${Math.max(st.kuk,st.n0)}).`,`Penangkaran: rata-rata ${f1(cb.founders)} dari ${st.fH1+st.fH2+st.fM} pendiri sampai di lokasi dan ${f1(cb.capLost)} mati saat penangkapan; ${f1(cb.fH2)} di antaranya betina haplotipe 2 (lebih sedikit jika betina usia kawin tidak cukup). "Mencapai target" adalah tahun pertama ketika setidaknya separuh simulasi memiliki ${st.tgt} badak atau lebih di kedua lokasi. Daya dukung Ujung Kulon diatur minimal sama dengan jumlah awal (${Math.max(st.kuk,st.n0)}).`):'';
+}
+function headline(){
+ const a=R.po,b=R.fp,c=R.all;if(!a||!b||!c)return;
+ const ID=LANG==='id',nm=(ID?{87:'angka pemerintah (~87)',50:'perkiraan IUCN sekitar 50'}:{87:'the government count (~87)',50:'the IUCN estimate of about 50'})[st.n0];
+ const ph=r=>ID?(r.above0?(r.below?`turun di bawah ${st.tgt} pada <em>${r.below}</em>`:`tetap di atas ${st.tgt}`):(r.rec?`mencapai ${st.tgt} pada <em>${r.rec}</em>`:`tidak mencapai ${st.tgt} hingga 2126`)):(r.above0?(r.below?`falls below ${st.tgt} in <em>${r.below}</em>`:`stays above ${st.tgt}`):(r.rec?`reaches ${st.tgt} in <em>${r.rec}</em>`:`doesn't reach ${st.tgt} by 2126`));
+ let best=null;for(const s2 of STR){const r=R[s2.k];if(!r||r.above0||s2.k==='po')continue;if(r.rec&&(!best||r.rec<R[best.k].rec))best=s2}
+ let h=ID?`Dari ${nm}: jika perburuan berlanjut ${st.poach===.07?'sekitar 7% per tahun (laju perburuan 2019–2023)':Math.round(st.poach*100)+'% per tahun'}, populasi ${ph(a)} dan berakhir sekitar <em>${a.med[100]}</em> pada 2126 (risiko kepunahan ${pct(a.pExt)}). Dengan perlindungan penuh saja, populasi ${ph(b)}; dengan tambahan pemulihan habitat dan penangkaran mulai ${st.start}, populasi ${ph(c)}.`:`Starting from ${nm}: if poaching continues at ${Math.round(st.poach*100)}% a year, the population ${ph(a)} and ends near <em>${a.med[100]}</em> in 2126 (extinction risk ${pct(a.pExt)}). With full protection alone it ${ph(b)}; adding habitat recovery and captive breeding from ${st.start}, it ${ph(c)}.`;
+ if(best)h+=ID?` Jalur tercepat: <em>${best.name.toLowerCase()}</em>.`:` Fastest route here: <em>${best.name.toLowerCase()}</em>.`;
+ const f=first100();
+ h+=ID?(f?` Jumlah pertama kali mencapai 100 pada <em>${f.yr}</em> (${f.name.toLowerCase()}): saat itulah reintroduksi ke habitat kedua menjadi memungkinkan.`:` Tidak ada strategi yang mencapai 100 badak dengan pengaturan ini, sehingga reintroduksi ke habitat kedua belum memungkinkan.`):f?` Numbers first reach 100 in <em>${f.yr}</em> (${f.name.toLowerCase()}): the point at which reintroduction to a second habitat becomes possible.`:` No strategy reaches 100 rhinos under these settings, so reintroduction to a second habitat isn't yet possible.`;
+ $('head').innerHTML=h;
+}
+const SWY=[2027,2028,2030,2032,2035,2040];
+function swRows(){const run_=T('running…','berjalan…');
+ $('sw').innerHTML=SWY.map(y=>{const r=SW[String(y)];if(!r)return `<tr><td>${y}</td><td colspan="6" class="note">${run_}</td></tr>`;
+  return `<tr><td>${y}${y==st.start?' <span class="note">'+T('(selected)','(dipilih)')+'</span>':''}</td><td class="num" data-l="${T('Founders moved','Pendiri dipindahkan')}">${f1(r.founders)} ${T('of','dari')} ${st.fH1+st.fH2+st.fM}</td><td class="num" data-l="${T('Reaches target','Mencapai target')}">${recTxt(r)}</td><td class="num" data-l="Median 2050">${r.med[24]}</td><td class="num" data-l="${T('Second site alive','Habitat kedua bertahan')}">${pct(1-r.pS2ext)}</td><td class="num" data-l="${T('Haplotype 2 kept','Haplotipe 2 bertahan')}">${pct(r.pH2)}</td><td class="num" data-l="${T('Extinction risk','Risiko kepunahan')}">${pct(r.pExt)}</td></tr>`}).join('')}
+function swNote(){if(!SWdone){$('swnote').textContent='';return}
+  const ys=SWY,S=SW;const rs=ys.map(y=>[y,S[String(y)]]).filter(([y,r])=>r&&r.rec&&!r.above0);const ref=R.hb;
+  if(!rs.length){$('swnote').textContent=S[ys[0]]&&S[ys[0]].above0?T('The population starts above the target, so the start year mainly changes how much the second site adds.','Populasi awal sudah di atas target, sehingga tahun mulai terutama mengubah seberapa besar kontribusi habitat kedua.'):T('No start year reaches the target by 2126 with these settings.','Tidak ada tahun mulai yang mencapai target hingga 2126 dengan pengaturan ini.');return}
+  rs.sort((p,q)=>p[1].rec-q[1].rec||p[0]-q[0]);const [by,br]=rs[0];const mx=Math.max(...rs.map(x=>x[1].rec));const rng=br.rec+(mx>br.rec?'–'+mx:'');
+  let t=rs.length===ys.length&&mx-br.rec<=2?T(`Start year makes little difference here: the target is reached in ${rng} whichever year captive breeding starts.`,`Tahun mulai hampir tidak berpengaruh di sini: target tercapai pada ${rng} kapan pun penangkaran dimulai.`):T(`Earliest recovery with these settings: start in ${by} (target reached in ${br.rec}).`,`Pemulihan tercepat dengan pengaturan ini: mulai pada ${by} (target tercapai pada ${br.rec}).`);
+  if(ref&&ref.rec&&ref.rec<br.rec)t+=T(` Habitat recovery without captive breeding gets there sooner (${ref.rec}): at this population size, removing founders slows Ujung Kulon's own recovery.`,` Pemulihan habitat tanpa penangkaran mencapainya lebih cepat (${ref.rec}): pada ukuran populasi ini, mengambil individu pendiri memperlambat pemulihan Ujung Kulon sendiri.`);
+  $('swnote').textContent=t}
+function sweep(){
+ const list=SWY.map(y=>({key:String(y),P:params('all',y),seed:15}));
+ SW={};SWdone=false;swRows();swNote();
+ runJobs(list,200,st.tgt,(k,s)=>{SW[k]=s;swRows()},()=>{SWdone=true;swNote()});
+}
+// ---------- language
+const EN={};document.querySelectorAll('[data-t]').forEach(el=>EN[el.dataset.t]=el.innerHTML);
+function setLang(l){LANG=l;try{localStorage.setItem('jrLang',l)}catch(e){}
+ document.documentElement.lang=l;document.title=T('Javan rhino recovery simulation','Simulasi pemulihan badak jawa');
+ document.querySelectorAll('[data-t]').forEach(el=>{const k=el.dataset.t;el.innerHTML=l==='id'?window.I18N[k]:EN[k]});
+ const lb=$('langbtn');lb.innerHTML=l==='id'?'<span class="lf">English</span><span class="ls">English</span>':'<span class="lf">Bahasa Indonesia</span><span class="ls">Bahasa</span>';lb.lang=l==='id'?'en':'id';
+ lbl();drawTL();segs();legend();draw();table();
+ if(DONE)headline();else{$('head').textContent=T('Running the model…','Menjalankan model…');if($('busy').textContent)$('busy').textContent=T('running…','berjalan…')}
+ if(DONE){if(Object.keys(SW).length)swRows();swNote()}else $('sw').innerHTML='<tr><td colspan="7" class="note">'+T('Waiting for the main run…','Menunggu simulasi utama…')+'</td></tr>';
+}
+$('langbtn').addEventListener('click',()=>setLang(LANG==='id'?'en':'id'));
+if(LANG==='id')setLang('id');
+run();
+}
+</script>
+</body>
+</html>
