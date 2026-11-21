@@ -56,6 +56,8 @@ main.band{padding-top:clamp(14px,1.6vw,22px)}
 @media(min-width:901px){.fig+.legend{margin-top:36px}.grid{grid-template-columns:min(calc((100svh - var(--hh,200px)) * 1.1667),66%) minmax(300px,1fr)}}
 @media(max-width:900px){.fig{max-height:calc(100svh - var(--hh,200px));width:min(100%,calc((100svh - var(--hh,200px)) * 1.1667));margin-inline:auto}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
+.nextsim{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px}.nextsim .lab{font:400 12px "Space Mono",ui-monospace,monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}.nextsim p{margin:6px 0 0;max-width:60ch}.minebtn{border-color:var(--accent);color:var(--accent);margin:0}.minebtn:hover{background:var(--accent);color:#10120f}
+.src{padding-left:22px}.src li{margin-bottom:6px;font-size:14px;color:var(--mute)}
 </style>
 </head>
 <body>
@@ -124,6 +126,28 @@ main.band{padding-top:clamp(14px,1.6vw,22px)}
  <div><h2>How to read it</h2>
   <p>Mining all 103 test sites at once is a theoretical ceiling, not a plan, so the default is a small number of mines. "Typical" and "1-in-10 bad" come from 300 random layouts of that many mines (all 103 sites for one mine), ranked by lost value; "Worst sites" puts the mines on the test sites that do the most damage on their own. Plumes from mines running together are added up. Only mining <b>outside</b> the park is modelled; WUP blocks that the decree draws inside the park are left out here. Damage is a fraction of yearly value where extra sediment stays above 5 mg/L (stress) or 20 mg/L (above the legal limit) for the 10-day average. Banten reefs already reached thermal-stress warning levels in 2015–2019 (Gusviga et al. 2021), so sediment adds to an existing stress: the high setting reflects that.</p>
   <p class="note">Screening only: idealised currents, digitised WUP (±250 m), assumed release rates and loss fractions. Not an AMDAL.</p></div>
+</div></section>
+
+<section class="band" style="border-top:1px solid var(--line)"><div class="wrap">
+<h2>Sources</h2>
+<ol class="src">
+<li>Keputusan Menteri ESDM No. 65.K/MB.01/MEM.B/2026 tentang Wilayah Pertambangan Provinsi Banten (12 February 2026). Source of the Mining Business Area (WUP), digitised from the decree map.</li>
+<li>Peraturan Pemerintah No. 22 Tahun 2021 tentang Penyelenggaraan Perlindungan dan Pengelolaan Lingkungan Hidup, Lampiran VIII (baku mutu air laut). Source of the 20 mg/L suspended-solids limit for coral and seagrass.</li>
+<li>HYCOM Consortium. Global Ocean Forecasting System (GOFS) 3.1, 1/12° HYCOM + NCODA analysis. hycom.org. Source of the modelled ocean currents.</li>
+<li>European Space Agency, Copernicus Sentinel-2 MSI imagery, 2019–2024. Used for the turbidity check.</li>
+<li>Allen Coral Atlas, 2022. Benthic habitat maps (coral/algae, seagrass). allencoralatlas.org. Source of reef and seagrass areas.</li>
+<li>Arkham M.N., Wahyudin Y., Pahlevi M.R. &amp; Hutapea R.Y.F. 2020. Jasa penyedia ekosistem terumbu karang di Kawasan Suaka Alam Perairan Kepulauan Raja Ampat dari perspektif valuasi ekonomi. <i>Jurnal Kelautan</i> 13(3). doi:10.21107/jk.v13i3.7921. Coral value, low.</li>
+<li>Husni S. 2003. Nilai ekonomi ekosistem terumbu karang di Taman Wisata Alam Laut Gili Indah, Kabupaten Lombok Barat, NTB. <i>Agroteksos</i> 13(3): 165–173. Coral value, mid.</li>
+<li>Wahyudin Y. 2007. <i>An Economic Value of the Natural Seaweed Resources</i>. Institute for Applied Sustainable Development (IASD), Bogor. Coral value, high (Ujung Kulon reef flat).</li>
+<li>Wahyudin Y. 2022. Analisis ekonomi keterkaitan ekosistem lamun dan sumberdaya ikan di Kawasan Konservasi Padang Lamun Pulau Bintan. <i>Jurnal Akuatika Indonesia</i> 7(2): 42–49. Seagrass values, low and high.</li>
+<li>Gusviga B.H., Subiyanto, Faizal I., Yusri S., Sari S.K. &amp; Purba N.P. 2021. Occurrence and prediction of coral bleaching based on ocean surface temperature anomalies and global warming in Indonesian waters. <i>IOP Conference Series: Earth and Environmental Science</i> 750: 012032.</li>
+<li>Badan Pusat Statistik (BPS). Annual consumer price index, used to bring values to 2025 rupiah.</li>
+</ol>
+</div></section>
+
+<section class="band" style="border-top:1px solid var(--line)"><div class="wrap nextsim">
+ <div><div class="lab">Also in Ujung Kulon</div><p>Only about 50–100 Javan rhinos remain, all of them in this park. Compare how protection, habitat recovery and captive breeding could help them recover.</p></div>
+ <a class="back minebtn" href="../javan/index.html">Explore rhino recovery simulation →</a>
 </div></section>
 
 <script>
