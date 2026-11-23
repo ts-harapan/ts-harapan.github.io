@@ -3,584 +3,417 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title data-t="t1">Javan rhino recovery simulation</title>
+<title>Sea mining risk simulation for Ujung Kulon</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&family=Oxanium:wght@300;400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&family=Oxanium:wght@300;400&display=swap" rel="stylesheet">
 <style>
-/* VOICE: a field-station briefing — calm, exact, every number traceable.
-   IDEA: a population-viability console: the census board up top, the scenario bench below.
-   PICTURE: projected rhino numbers under five strategies, plus Desy's calving record against the captive sanctuary.
-   COLOUR and TYPE: site black #0b0d0b, paper ink #f2f1ea, accent orange #e8783f, strategy hues; Oxanium titles, Space Grotesk, Inter, Space Mono labels.
-   LAYOUT: grid header, census cards, breeding timeline, simulator (controls | chart), results table, start-year sweep, methods. */
-:root{color-scheme:dark;--bg:#0b0d0b;--ink:#f2f1ea;--mute:#a3a89d;--line:rgba(242,241,234,.16);--card:#131813;--acc:#e8783f;--c0:#e8783f;--c1:#f2f1ea;--c2:#8dffa8;--c3:#6fb7ff;--c4:#c9a0ff}
+/* VOICE: a marine survey sheet — exact, calm, numbers you can check.
+   IDEA: a nautical chart with a live damage ledger beside it.
+   PICTURE: the chart itself — blue sea, green park, emerald reefs, plume heat on top.
+   COLOUR and TYPE: ocean blue ground, park green, emerald-blue habitat, amber plume; Space Grotesk titles, Inter body.
+   LAYOUT: title strip, chart + ledger side by side above 900px, stacked below; method and sources after. */
+:root{color-scheme:dark;--bg:light-dark(#ffffff,#0b0d0b);--ink:light-dark(#10202e,#e6eef5);--mute:light-dark(#566673,#9fb0bf);
+--sea:#1f6fa8;--sea2:#185d8f;--land:light-dark(#e9e5da,#2a2f33);--landEdge:light-dark(#b9b2a0,#4a5156);--park:#2e9e5b;--parkEdge:#1c7a3e;
+--hab:#14d6c4;--mpa:#c47bff;--wup:#f2c14e;--line:light-dark(#d9e1e7,#24323f);--card:light-dark(#f4f8fb,#131813);--accent:#e8783f}
+
 *{box-sizing:border-box;min-width:0}
-html{scroll-padding-top:20px}
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Inter,system-ui,sans-serif;overflow-x:clip}
-h1,h2,h3{font-family:"Space Grotesk",Inter,sans-serif;font-weight:600;line-height:1.1;margin:0;text-wrap:balance}
-h2{font-size:clamp(22px,2.4vw,30px);margin-bottom:10px}h3{font-size:17px}
+h1,h2,h3{font-family:"Space Grotesk",Inter,sans-serif;font-weight:600;line-height:1.08;margin:0;text-wrap:balance}
+h1{font-size:clamp(28px,4.2vw,46px)}h2{font-size:24px;margin-bottom:12px}h3{font-size:17px}
 .band{padding:clamp(22px,3.5vw,48px) max(4vw,16px)}
+.strip{position:relative;overflow:hidden;color:#f2f1ea;background:radial-gradient(ellipse 70% 120% at 85% 0%,rgba(31,111,168,.35),transparent 60%),radial-gradient(ellipse 50% 90% at 0% 100%,rgba(232,120,63,.14),transparent 60%),#0b0d0b;border-bottom:1px solid rgba(242,241,234,.18)}.strip::before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(141,255,168,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(141,255,168,.07) 1px,transparent 1px),linear-gradient(rgba(141,255,168,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(141,255,168,.035) 1px,transparent 1px);background-size:80px 80px,80px 80px,16px 16px,16px 16px;-webkit-mask-image:linear-gradient(180deg,#000 40%,transparent);mask-image:linear-gradient(180deg,#000 40%,transparent);pointer-events:none}.strip::after{content:"";position:absolute;left:0;right:0;top:0;height:40%;background:linear-gradient(180deg,transparent,rgba(141,255,168,.07),transparent);animation:scan 6s linear infinite;pointer-events:none}@keyframes scan{from{transform:translateY(-100%)}to{transform:translateY(260%)}}@media(prefers-reduced-motion:reduce){.strip::after{display:none}}.strip .wrap{position:relative;z-index:1}.strip h1{font-family:Oxanium,"Space Mono",monospace;font-weight:300;text-transform:uppercase;letter-spacing:.02em;font-size:clamp(30px,5vw,64px);line-height:1.04}.back{display:inline-block;font:500 12px "Space Grotesk",sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#f2f1ea;text-decoration:none;border:1px solid #f2f1ea;border-radius:999px;padding:10px 16px;margin-bottom:28px;transition:.2s}.back:hover{border-color:var(--accent);color:var(--accent)}.strip p{color:#d6e8f5;max-width:70ch;margin:12px 0 0}
 .wrap{max-width:1240px;margin:0 auto}
-.strip{position:relative;overflow:hidden;background:radial-gradient(ellipse 70% 120% at 85% 0%,rgba(232,120,63,.22),transparent 60%),radial-gradient(ellipse 50% 90% at 0% 100%,rgba(31,111,168,.25),transparent 60%),#0b0d0b;border-bottom:1px solid rgba(242,241,234,.18);padding-block:clamp(16px,2.2vw,28px)}
-.strip::before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(141,255,168,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(141,255,168,.07) 1px,transparent 1px),linear-gradient(rgba(141,255,168,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(141,255,168,.035) 1px,transparent 1px);background-size:80px 80px,80px 80px,16px 16px,16px 16px;-webkit-mask-image:linear-gradient(180deg,#000 40%,transparent);mask-image:linear-gradient(180deg,#000 40%,transparent);pointer-events:none}
-.strip::after{content:"";position:absolute;left:0;right:0;top:0;height:40%;background:linear-gradient(180deg,transparent,rgba(141,255,168,.07),transparent);animation:scan 6s linear infinite;pointer-events:none}
-@keyframes scan{from{transform:translateY(-100%)}to{transform:translateY(260%)}}
-@media(prefers-reduced-motion:reduce){.strip::after{display:none}}
-.strip .wrap{position:relative;z-index:1}
-.strip h1{font-family:Oxanium,"Space Mono",monospace;font-weight:300;text-transform:uppercase;letter-spacing:.02em;font-size:clamp(26px,3.6vw,48px);line-height:1.04}
-.strip p{color:#cfd3c8;max-width:66ch;margin:12px 0 0;font-size:16px}
-.back{display:inline-block;font:500 12px "Space Grotesk",sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#f2f1ea;text-decoration:none;border:1px solid #f2f1ea;border-radius:999px;padding:10px 16px;margin-bottom:14px;transition:.2s}.back:hover{border-color:var(--acc);color:var(--acc)}
-.topbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}.topbar .back{margin-bottom:0}.langbtn{background:transparent;min-height:0;font-size:12px;cursor:pointer;margin-left:auto}.langbtn .ls{display:none}.navl{display:flex;flex-wrap:wrap;gap:10px;flex:1 1 0;min-width:0}.langbtn{flex:0 0 auto}.minebtn{border-color:var(--acc);color:var(--acc);margin:0}.nextsim{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px}.nextsim p{margin:6px 0 0;color:#cfd3c8;max-width:60ch}.minebtn:hover{background:var(--acc);color:#10120f}@media(max-width:480px){.topbar{flex-wrap:nowrap;align-items:flex-start}.topbar .back{padding:10px 12px;letter-spacing:.1em}.langbtn .lf{display:none}.langbtn .ls{display:inline}}
-.lab{font:400 12px "Space Mono",ui-monospace,monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}
-.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:22px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px}
-.card .big{font:300 clamp(34px,4.4vw,56px)/1 Oxanium,"Space Mono",monospace;margin:8px 0 8px;white-space:nowrap}
-.card p{margin:0;color:#cfd3c8;font-size:14px}
-.card.hot .big{color:var(--acc)}
-@media(max-width:760px){.cards{grid-template-columns:1fr}}
-.two{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:clamp(18px,3vw,40px);align-items:start}
-@media(max-width:900px){.two{grid-template-columns:1fr}}
-.fig{position:relative}
-#tl{width:100%;height:auto;display:block}
+.grid{display:grid;grid-template-columns:minmax(0,1.9fr) minmax(0,1fr);gap:22px;align-items:start}
+@media(max-width:900px){.grid{grid-template-columns:minmax(0,1fr)}}
+.fig{position:relative;aspect-ratio:10500/9000;border-radius:10px;overflow:hidden;background:var(--sea);touch-action:none}
+.fig canvas{position:absolute;inset:0;width:100%;height:100%;cursor:grab}.fig #curcv,.fig #nzcv{pointer-events:none}.curlbl{position:absolute;left:10px;top:10px;font:12px/1.3 "Space Mono",ui-monospace,monospace;color:#e6f6ff;background:rgba(8,12,10,.62);padding:6px 9px;border-radius:6px;display:none;max-width:calc(100% - 80px);flex-wrap:wrap;align-items:center;gap:4px 6px}.curlbl .sh{display:none}@media(max-width:600px){.curlbl .l{display:none}.curlbl .sh{display:inline}.curlbl button{padding:0 6px}}.curlbl .cs{display:flex;flex-wrap:wrap;gap:4px}.curlbl button{font:inherit;color:inherit;background:transparent;border:1px solid transparent;border-radius:4px;min-height:28px;padding:0 8px;opacity:.6;cursor:pointer}.curlbl button:hover{opacity:1}.curlbl button[aria-pressed=true]{opacity:1;border-color:rgba(230,246,255,.75)}
+.zoom{position:absolute;right:10px;top:10px;display:flex;flex-direction:column;gap:6px}
+.zoom button{width:44px;height:44px;font-size:20px}
+button,select{font:inherit;font-size:16px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);min-height:44px;padding:0 12px;cursor:pointer}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.seg{display:flex;flex-wrap:wrap;gap:6px}.seg button[aria-pressed=true]{background:var(--accent);color:#10120f;border-color:var(--accent)}
+.ctl{display:grid;gap:14px;margin-top:16px}.ctl label{font-size:14px;color:var(--mute);display:block;margin-bottom:6px}
+.tog{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:14px}.tog label{display:flex;align-items:center;gap:6px;color:var(--ink);margin:0;min-height:32px}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.ledger{background:var(--card);border-radius:10px;padding:18px}
+.big{font-family:"Space Grotesk",sans-serif;font-size:clamp(30px,4vw,44px);font-weight:600;line-height:1;white-space:nowrap}
+.kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:14px 0}
+.kpi small{display:block;color:var(--mute);font-size:13px}.kpi b{font-size:22px;white-space:nowrap}
+table{border-collapse:collapse;width:100%;font-size:14px}th,td{padding:6px 6px;border-bottom:1px solid var(--line);text-align:right}th:first-child,td:first-child{text-align:left}
+th{font-weight:600;color:var(--mute)}
+.legend{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:13px;margin-top:10px;color:var(--mute)}
+.lg{display:grid;gap:8px;font-size:12px}.lg>div{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:center}.lg span{white-space:nowrap}.lg b{color:var(--ink);font-weight:600;flex:0 0 7.5em;line-height:1.2}
+.sw{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:-2px;margin-right:6px}
+.tip{position:absolute;pointer-events:none;background:#0b1420ee;color:#fff;font-size:13px;padding:8px 10px;border-radius:8px;max-width:240px;display:none;z-index:3}
 .note{font-size:13px;color:var(--mute)}
-.prec{display:grid;gap:12px}
-.prec .card h3{margin-bottom:6px}
-.prec .card p{font-size:14px}
-/* simulator */
-.sim{display:grid;grid-template-columns:minmax(280px,360px) minmax(0,1fr);gap:22px;align-items:start}
-@media(max-width:960px){.sim{grid-template-columns:1fr}.sim .out{order:-1}}
-.ctl{display:grid;gap:14px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px}
-.ctl fieldset{border:0;margin:0;padding:0;display:grid;gap:12px}
-.ctl legend{font:600 13px "Space Grotesk",sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--acc);padding:0;margin-bottom:6px}
-.ctl label{font-size:14px;color:#d6d9cf;display:block;margin-bottom:6px}
-.ctl label b{color:var(--ink);font-weight:600}
-.seg{display:flex;flex-wrap:wrap;gap:6px}
-button,select{font:inherit;font-size:15px;border-radius:8px;border:1px solid var(--line);background:#0f130f;color:var(--ink);min-height:44px;padding:0 12px;cursor:pointer}
-.seg button{font-size:14px;padding:0 10px}
-.seg button[aria-pressed=true]{background:var(--acc);color:#10120f;border-color:var(--acc)}
-button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
-input[type=range]{width:100%;accent-color:var(--acc);height:28px}
-.chk{display:flex;align-items:center;gap:8px;font-size:14px;min-height:32px}
-.chk input{width:18px;height:18px;accent-color:var(--acc)}
-.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;align-items:end}.grid3 .note{display:block;line-height:1.25;margin-bottom:4px}
-.grid3 select{width:100%;padding:0 6px}
-.out{display:grid;gap:14px}
-.startbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px}.startbar .seg button{font-size:15px;padding:0 14px}.seg input.segin{font:inherit;font-size:15px;width:9ch;min-height:44px;padding:0 12px;border-radius:8px;border:1px solid var(--line);background:#0f130f;color:var(--ink);text-align:center;-moz-appearance:textfield}.seg input.segin::-webkit-inner-spin-button,.seg input.segin::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}.seg input.segin::placeholder{color:var(--ink);opacity:1}.seg input.segin.on{background:var(--acc);color:#10120f;border-color:var(--acc)}.seg input.segin.on::placeholder{color:#10120f;opacity:.6}.seg input.segin:focus{outline:2px solid var(--acc);outline-offset:2px}
-.headline{font:500 clamp(18px,1.8vw,22px)/1.35 "Space Grotesk",sans-serif;margin:0;min-height:3em}
-.headline em{font-style:normal;color:var(--acc)}
-.chart{position:relative;height:clamp(300px,46vh,460px);background:var(--card);border:1px solid var(--line);border-radius:10px}
-.chart svg{position:absolute;inset:0;width:100%;height:100%}
-.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:#d6d9cf}
-.legend span{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
-.legend .leghd{flex-basis:100%;color:var(--ink);font:600 13px "Space Grotesk",sans-serif;letter-spacing:.04em}
-.legend i{width:18px;height:3px;border-radius:2px;display:inline-block}
-.busy{position:absolute;right:12px;top:10px;font:12px "Space Mono",monospace;color:var(--mute)}
-table{border-collapse:collapse;width:100%;font-size:14px}
-th,td{padding:8px 8px;border-bottom:1px solid var(--line);text-align:right;vertical-align:top}
-th:first-child,td:first-child{text-align:left}
-th{font-weight:600;color:var(--mute);font-size:13px}
-td .sw{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:8px;vertical-align:0}
-.num{white-space:nowrap;font-variant-numeric:tabular-nums}
-.scroll{overflow-x:auto}
 .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:22px}
-.cols p{color:#cfd3c8;font-size:15px}
-a{color:var(--acc)}
-.src li{margin-bottom:6px;font-size:14px;color:#cfd3c8}
-@media(max-width:600px){table{font-size:13px}.stack thead{display:none}.stack tr{display:grid;padding-block:10px;border-bottom:1px solid var(--line)}.stack td{display:flow-root;border:0;padding:3px 0;padding-inline-start:9.5em;text-align:start}.stack td:first-child{padding-inline-start:0;font-weight:600}.stack td:first-child::before{content:none}.stack td::before{content:attr(data-l);float:inline-start;width:9em;margin-inline-start:-9.5em;color:var(--mute);white-space:normal}}
-.rdot{cursor:pointer;outline:none}.rdot .ryr{opacity:0;transition:opacity .15s;pointer-events:none}.rdot:hover .ryr,.rdot:focus .ryr{opacity:1}
+.scroll{overflow-x:auto}
+a{color:var(--accent)}
+@media(max-width:600px){table{font-size:13px}}
+/* first screen: header + whole map fit the window */
+.strip{padding-block:clamp(16px,2.2vw,28px)}.strip h1{font-size:clamp(26px,3.6vw,48px)}.back{margin-bottom:14px}
+main.band{padding-top:clamp(14px,1.6vw,22px)}
+@media(min-width:901px){.fig+.legend{margin-top:36px}.grid{grid-template-columns:min(calc((100svh - var(--hh,200px)) * 1.1667),66%) minmax(300px,1fr)}}
+@media(max-width:900px){.fig{max-height:calc(100svh - var(--hh,200px));width:min(100%,calc((100svh - var(--hh,200px)) * 1.1667));margin-inline:auto}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+.nextsim{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px}.nextsim .lab{font:400 12px "Space Mono",ui-monospace,monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}.nextsim p{margin:6px 0 0;max-width:60ch}.minebtn{border-color:var(--accent);color:var(--accent);margin:0}.minebtn:hover{background:var(--accent);color:#10120f}
+.src{padding-left:22px}.src li{margin-bottom:6px;font-size:14px;color:var(--mute)}
 </style>
 </head>
 <body>
 <header class="band strip"><div class="wrap">
-<div class="topbar"><div class="navl"><a class="back" href="../index.html" data-t="t0">← Back to Main Page</a></div><button type="button" class="back langbtn" id="langbtn" lang="id"><span class="lf">Bahasa Indonesia</span><span class="ls">Bahasa</span></button></div>
-<h1 data-t="t1">Javan rhino recovery simulation</h1>
-<p data-t="t2">How many Javan rhinos are left decides what to do next. This model projects the Ujung Kulon population from two starting counts and compares full protection, habitat recovery and captive breeding, including when to start and which mitochondrial haplotypes to catch.</p>
+<a class="back" href="../index.html">← Back to Main Page</a>
+<h1>Sea mining risk simulation for Ujung Kulon</h1>
 </div></header>
 
-<main>
-<section class="band"><div class="wrap">
-<div class="lab" data-t="t3">How many are left?</div>
-<div class="cards">
- <div class="card"><div class="lab" data-t="t4">Government, 2025</div><div class="big">87–100</div><p data-t="t5">Ministry of Forestry estimate for Ujung Kulon. Modelled at the low end, 87.</p></div>
- <div class="card hot"><div class="lab">IUCN / IRF, 2025</div><div class="big">≈50</div><p data-t="t6">76 estimated in 2022, minus 26 rhinos (mostly males) that poachers confessed to killing in 2019–2023.</p></div>
-</div>
-</div></section>
-
-<section class="band" style="padding-top:0"><div class="wrap two">
- <div>
-  <h2 data-t="t7">How fast can a female breed?</h2>
-  <p style="color:#cfd3c8;margin-top:0" data-t="t8">Desy, a wild female in Ujung Kulon, has had five calves since 2013, one every 3.4 years on average. That matches the 33% yearly breeding rate used in the 2016 PHVA. At the Sumatran Rhino Sanctuary in Way Kambas, the most successful mother, Ratu, had three calves in 2012–2023, one every 5.6 years. Rosa had one calf after eight pregnancy losses, and Delilah, born at the sanctuary, had her first in 2023.</p>
-  <div class="fig scroll"><svg id="tl" style="min-width:560px" viewBox="0 0 720 300" role="img" aria-label="Timeline of calves per mother: Desy in the wild versus Ratu, Rosa and Delilah at the Sumatran Rhino Sanctuary"></svg></div>
-  <p class="note" style="display:flex;flex-wrap:wrap;gap:6px 18px;margin-bottom:4px"><span><i style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#e8783f;margin-right:6px"></i><span data-t="t9">Javan rhino</span></span><span><i style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#6fb7ff;margin-right:6px"></i><span data-t="t10">Sumatran rhino</span></span></p>
-  <p class="note" style="margin-top:0" data-t="t11">There is no record of Javan rhinos breeding in captivity, so the model uses the Sumatran Rhino Sanctuary (SRS) record for captive breeding. Model rates: wild ≈ 0.33 births per adult female per year; SRS-like ≈ 0.12 (5 births from 3 mothers over about 42 breeding-age female-years, 2012–2025).</p>
+<main class="band"><div class="wrap grid">
+<section>
+ <div class="fig" id="fig"><canvas id="cv" aria-label="Map of Ujung Kulon, mining zone, plumes and habitat"></canvas><canvas id="curcv" aria-hidden="true"></canvas><canvas id="nzcv" aria-hidden="true"></canvas><div class="curlbl" id="curlbl"><span><span class="l">Ocean c</span><span class="sh">C</span>urrents:</span><span class="cs" id="curs"></span></div>
+  <div class="zoom"><button id="zin" aria-label="Zoom in">+</button><button id="zout" aria-label="Zoom out">−</button><button id="zre" aria-label="Reset view">⟲</button></div>
+  <div class="tip" id="tip"></div></div>
+ <div class="legend lg">
+  <div><b>Places</b><span><i class="sw" style="background:rgba(46,180,90,.6)"></i>Ujung Kulon NP</span><span><i class="sw" style="border:2px solid var(--mpa)"></i>Marine Protected Area</span><span><i class="sw" style="background:var(--hab)"></i>Coral reef / seagrass</span><span><i class="sw" style="background:var(--wup);opacity:.55"></i>Mining Business Area (WUP)</span></div>
+  <div><b>Test sites</b><span><i class="sw" style="background:#fff;border-radius:50%;border:1px solid #000"></i>not mined</span><span>park water muddied by one site: <i class="sw" style="background:#ffe14d;border-radius:50%"></i>25–75 ha <i class="sw" style="background:#ff9a1f;border-radius:50%"></i>100–175 <i class="sw" style="background:#ff3b30;border-radius:50%"></i>200–275 <i class="sw" style="background:#d61aff;border-radius:50%"></i>300+ ha</span></div>
+  <div><b>Sediment</b><span>extra mud: <i class="sw" style="background:#ffe678"></i>0.5–2 <i class="sw" style="background:#ff9628"></i>2–5 <i class="sw" style="background:#eb321e"></i>5–20 <i class="sw" style="background:#960014"></i>&gt;20 mg/L</span><span>inside the park: <i class="sw" style="border:2px solid #ff2bd6"></i>&gt;5 mg/L <i class="sw" style="background:rgba(255,43,214,.6)"></i>&gt;20 mg/L (above legal limit)</span></div>
+  <div><b>Proposed no-mining zone</b><span><i class="sw" style="border:3px solid #fff;background:rgba(255,255,255,.3);outline:1px solid #888"></i>highest risk</span><span><i class="sw" style="border:2px dashed #888"></i>at risk</span></div>
+  <div id="nzleg" hidden><b>Underwater noise</b><span><i class="sw" style="background:rgba(120,200,255,.55)"></i>above 120 dB: dolphins and whales disturbed</span><span><i class="sw" style="background:rgba(40,110,255,.85)"></i>above 150 dB: fish behaviour affected</span></div>
+  <div id="aleg" hidden><b>Noise on land</b><span><i class="sw" style="background:rgba(235,215,255,.6)"></i>30–40 dBA: may be heard, below the level where responses begin</span><span><i class="sw" style="background:rgba(200,120,255,.8)"></i>above 40 dBA: wildlife responses begin</span><span><i class="sw" style="background:rgba(150,60,240,.85)"></i>above 50 dBA: over the legal limit for green open space</span></div>
  </div>
- <div class="prec">
-  <div class="lab" data-t="t12">Precedents</div>
-  <div class="card"><h3>Nepal: from Chitwan to new sites</h3><p data-t="t13">Nepal moved 104 greater one-horned rhinos out of Chitwan in 1986–2023 to Bardia, Suklaphanta and Koshi Tappu, 88 of them to Bardia. Bardia's rhinos still fell from 67 in 2000 to 22 by 2008 during a poaching surge, so more were moved in. <b style="color:#ff4b3e">New sites only grow when protection holds.</b></p></div>
-  <div class="card"><h3>Santiapillai &amp; Suprahman, 1986</h3><p data-t="t14">With 54 rhinos, they advised waiting until the population reached about 80, and starting with free-range breeding of a few animals inside the park complex.</p></div>
+ <div class="ctl">
+  <div><label>Fine sediment released per site</label><div class="seg" id="rate"></div></div>
+  <div><label>Ocean currents</label><div class="seg" id="cur"></div><div class="note" style="margin-top:6px;display:grid;gap:4px">
+   <span><b>Idealised monsoon:</b> simple seasonal currents set from the monsoon pattern. Matches what satellites show in the bay toward Sumur.</span>
+   <span><b>HYCOM:</b> real currents from a global ocean model, 2015–2024. Reliable offshore, but its 9 km grid cannot see small bays near the coast.</span>
+   <span><b>Precautionary:</b> uses both and keeps the muddier result at every spot, so a risk is shown if either one finds it. Recommended.</span>
+   <span>The mines stay in the same place; only where the mud goes changes.</span><span><b>Moving streaks:</b> HYCOM GOFS 3.1 surface currents, seasonal means from 2 days a month, 2019–2024, sped up for display. Pick the season to animate in the box at the top left of the map; it is separate from the plume season.</span></div></div>
+  <div><label>Season</label><div class="seg" id="season"></div></div>
+  <div><label>Underwater noise from each dredger (source level at 1 m)</label><div class="seg" id="noise"></div><label style="display:flex;gap:8px;align-items:flex-start;margin-top:8px;font-size:13px"><input type="checkbox" id="deepsys" checked style="margin-top:3px"> <span>Sites in the deep sea (200 m or deeper, past the continental shelf) use a deep-sea mining system instead: ship (188 dB), riser pump (183 dB) and seabed tool (181 dB), about 190 dB together (Williams et al. 2022).</span></label><div class="note" style="margin-top:6px">Dredgers make continuous noise, mostly below 1 kHz. The rings show where it stays louder than the US thresholds for disturbing marine mammals (120 dB) and changing fish behaviour (150 dB). Sound fades with distance, is blocked by land, and loses its low notes over shallow seabed, using SRTM15+ depths. An estimate, not a measurement.</div></div>
+  <div><label>Noise in the air from each dredger (how loud the machine is)</label><div class="seg" id="anoise"></div><div class="note" style="margin-top:6px">Engines, pumps and generators heard on land. The values are sound power, the total noise the machine gives off; the map shows how loud it is once it reaches the coast and forest. Wildlife responses begin at about 40 dBA (Shannon et al. 2016); Indonesia's limit for green open space is 50 dBA (KepMenLH 48/1996). Sound fades with distance over the sea and drops quickly once it enters dense forest.</div></div>
+  <div class="tog" id="layers"></div>
  </div>
-</div></section>
+</section>
 
-<section class="band" id="sim" style="border-top:1px solid var(--line)"><div class="wrap">
-<h2 data-t="t15">Scenario bench</h2>
-<p class="note" style="margin-top:0" data-t="t16">Each run simulates every rhino, year by year from 2026 to 2126: births, deaths, inbreeding and mitochondrial lineage. The orange line lets poaching continue; the other four assume full protection (no more poaching). 200 runs per strategy; lines show the median of all runs.</p>
-<div class="sim">
- <form class="ctl" id="ctl" onsubmit="return false">
-  <fieldset><legend data-t="t17">Population</legend>
-   <div><label for="male" data-t="t18">Males in the population: <b id="maleV"></b></label><input type="range" id="male" min="30" max="70" step="1" value="53"></div>
-   <div><label for="h2" data-t="t19">Females carrying haplotype 2: <b id="h2V"></b></label><input type="range" id="h2" min="5" max="50" step="5" value="25"></div>
-   <div><label for="kuk" data-t="t20">Ujung Kulon carrying capacity</label><div class="seg" id="kuk"></div></div>
-  </fieldset>
-  <fieldset><legend data-t="t21">Threats</legend>
-   <div><label data-t="t22">Poaching rate in the poaching scenario (adults killed per year, mostly males). The 2019–2023 pace (26 rhinos killed) was about 7% a year.</label><div class="seg" id="poach"></div></div>
-   <label class="chk"><input type="checkbox" id="cat" checked> <span data-t="t23">Tsunami or disaster (1% a year, kills half) and disease outbreaks (2% a year, kills 10%)</span></label>
-  </fieldset>
-  <fieldset><legend data-t="t24">Captive breeding in JRSCA</legend>
-   <p class="note" style="margin:0 0 6px" data-t="t24n">JRSCA (Javan Rhino Study and Conservation Area)</p>
-   <div><label for="start" data-t="t25">Start year</label><select id="start"></select></div>
-   <div><label data-t="t26">Founders caught from Ujung Kulon</label>
-    <div class="grid3"><div><span class="note" data-t="t27">Females, haplotype 1</span><select id="fH1"></select></div><div><span class="note" data-t="t28">Females, haplotype 2</span><select id="fH2"></select></div><div><span class="note" data-t="t29">Males</span><select id="fM"></select></div></div></div>
-   <div><label data-t="t30">Breeding performance at the site</label><div class="seg" id="perf"></div></div>
-   <div><label data-t="t31">Captive breeding site capacity</label><div class="seg" id="k2"></div></div>
-   <div><label for="cap" data-t="t32">Capture mortality per animal: <b id="capV"></b></label><input type="range" id="cap" min="0" max="30" step="5" value="5"></div>
-   <label class="chk"><input type="checkbox" id="exch" checked> <span data-t="t33">Add one Ujung Kulon male every 8 years</span></label>
-  </fieldset>
-  <fieldset><legend data-t="t34">Recovery target</legend><div class="seg" id="tgt"></div><p class="note" style="margin:0" data-t="t35">80: the size Santiapillai &amp; Suprahman (1986) set before any translocation. 100: the size the Asian Rhino Specialist Group recommended for Nepal's new rhino populations.</p></fieldset>
- </form>
- <div class="out">
-  <div class="startbar"><span class="lab" data-t="t36">Starting population</span><div class="seg" id="n0"></div></div>
-  <p class="headline" id="head">Running the model…</p>
-  <div class="chart" id="chart"><svg id="cv" aria-label="Projected Javan rhino numbers under five strategies"></svg><span class="busy" id="busy"></span></div>
-  <div class="legend" id="leg"></div>
-  <div class="scroll"><table class="stack"><thead><tr><th data-t="t37">Strategy</th><th data-t="t38">Reaches target</th><th>Median 2050</th><th>Median 2126</th><th data-t="t39">Extinction risk</th><th data-t="t40">Haplotype 2 kept</th><th data-t="t41">Gene diversity kept</th></tr></thead><tbody id="tb"></tbody></table></div>
-  <p class="note" id="tnote"></p>
+<aside class="ledger" aria-live="polite">
+ <div class="ctl" style="margin-top:0">
+  <div><label>Mines operating at the same time</label><div class="seg" id="nm"></div></div>
+  <div><label>Where they are</label><div class="seg" id="plc"></div><div class="note" id="plcnote" style="margin-top:6px"></div></div>
  </div>
-</div>
-</div></section>
-
-<section class="band" style="border-top:1px solid var(--line)"><div class="wrap">
-<h2 data-t="t42">When should captive breeding start?</h2>
-<p class="note" style="margin-top:0" data-t="t43">Full protection, habitat recovery and captive breeding in JRSCA together, with the settings above, changing only the start year.</p>
-<div class="scroll"><table class="stack"><thead><tr><th data-t="t25">Start year</th><th data-t="t44">Founders moved</th><th data-t="t38">Reaches target</th><th>Median 2050</th><th data-t="t45">JRSCA group alive in 2126</th><th data-t="t40">Haplotype 2 kept</th><th data-t="t39">Extinction risk</th></tr></thead><tbody id="sw"><tr><td colspan="7" class="note">Waiting for the main run…</td></tr></tbody></table></div>
-<p class="note" id="swnote"></p>
-</div></section>
+ <h2 id="lh" style="margin:18px 0 4px">–</h2>
+ <div class="note" id="scen"></div>
+ <div class="big" id="annual" style="margin-top:12px">–</div>
+ <div class="note">lost ecosystem service value per year (2025 Rp): fisheries and seaweed use of reefs and seagrass, not biodiversity itself</div>
+ <div class="kpis">
+  <div class="kpi"><small>25-year loss, 6 % discount</small><b id="npv">–</b></div>
+  <div class="kpi"><small>Habitat-equivalent hectares lost</small><b id="eqha">–</b></div>
+  <div class="kpi"><small>Park waters above 5 mg/L</small><b id="pk5">–</b></div>
+  <div class="kpi"><small>Park waters above 20 mg/L</small><b id="pk20">–</b></div>
+ </div>
+ <div class="note" id="share" style="margin-bottom:10px"></div>
+ <div id="biobox" style="margin:4px 0 14px"><h3 style="margin:0 0 6px">Biodiversity at risk</h3>
+  <div class="kpis" style="margin:6px 0"><div class="kpi"><small>Coral reef above 5 mg/L</small><b id="bcor">–</b></div><div class="kpi"><small>Seagrass above 5 mg/L</small><b id="bsg">–</b></div><div class="kpi"><small>Reef and seagrass inside MPAs above 5 mg/L</small><b id="bmpa">–</b></div><div class="kpi"><small>Share of the park's waters above 5 mg/L</small><b id="bpk">–</b></div></div>
+  <div class="note" id="bionote"></div>
+  <ul class="note" style="margin:8px 0 0;padding-left:18px">
+   <li>Ujung Kulon is a UNESCO World Heritage Site (1991), listed for its natural beauty and its biodiversity, and an ASEAN Heritage Park.</li>
+   <li>Its reefs support one of the richest reef-fish faunas in the Indonesian archipelago (Smithsonian Ocean).</li>
+   <li>Green turtles nest on its beaches.</li>
+   <li>Dugongs, which feed mainly on seagrass, are recorded in the park's waters (Khalifa et al. 2024).</li>
+   <li>Whales and dolphins: no dedicated survey of the Sunda Strait was found. An aerial survey off western Sumatra in 2024 recorded 10 species, including sperm whales, mostly outside protected areas.</li>
+  </ul>
+  <div class="note" style="margin-top:8px">These are left without a rupiah value on purpose: there is no reliable local price for biodiversity, part of it is already counted in the fisheries and seaweed values above, and a World Heritage site is not something that can be traded against mining income.</div>
+ </div>
+ <div id="nzbox" hidden style="margin:4px 0 14px"><h3 style="margin:0 0 6px">Underwater noise (estimate)</h3><div class="kpis" style="margin:6px 0"><div class="kpi"><small>Park waters above 120 dB</small><b id="nz120">–</b></div><div class="kpi"><small>Park waters above 150 dB</small><b id="nz150">–</b></div><div class="kpi"><small>Reef / seagrass above 150 dB</small><b id="nzhab">–</b></div><div class="kpi"><small>Farthest reach of 120 dB</small><b id="nzr">–</b></div></div><div class="note" id="nznote"></div></div>
+ <div id="anbox" hidden style="margin:4px 0 14px"><h3 style="margin:0 0 6px">Noise on land (estimate)</h3><div class="kpis" style="margin:6px 0"><div class="kpi"><small>Park land above 40 dBA</small><b id="an40">–</b></div><div class="kpi"><small>Park land above 50 dBA</small><b id="an50">–</b></div><div class="kpi"><small>Loudest point on park land</small><b id="anmax">–</b></div><div class="kpi"><small>Park land above 30 dBA</small><b id="an30">–</b></div><div class="kpi"><small>Other coast above 40 dBA</small><b id="anco">–</b></div></div><div class="note" id="annote"></div></div>
+ <table><thead><tr><th>Exposed habitat</th><th>5–20 mg/L</th><th>&gt;20 mg/L</th><th>Rp bn/yr</th></tr></thead><tbody id="tb"></tbody></table>
+ <div class="ctl">
+  <div><label>Value per hectare</label><div class="seg" id="val"></div><div class="note" id="valnote" style="margin-top:6px"></div></div>
+  <div><label for="l5">Value lost at 5–20 mg/L: <b id="l5v"></b></label><input type="range" id="l5" min="0" max="50" step="1" value="10"></div>
+  <div><label for="l20">Value lost above 20 mg/L (PP 22/2021 coral/seagrass limit): <b id="l20v"></b></label><input type="range" id="l20" min="10" max="100" step="5" value="50"></div>
+ </div>
+ <div id="site" class="note" style="margin-top:14px">Hover or tap a hypothetical test site (a possible mining location, not an actual permit) to see what mining only there would cost.</div>
+</aside>
+</div></main>
 
 <section class="band" style="border-top:1px solid var(--line)"><div class="wrap cols">
- <div><h2 data-t="t46">What "full protection" means here</h2>
-  <p data-t="t47">In the model it means no rhinos are poached from 2027 onward. In the 2016 PHVA, adult mortality was the parameter with the largest effect on growth, and poaching was the only threat that drove modelled populations extinct. In practice that takes intensive Rhino Protection Unit patrols, camera-trap monitoring that would detect missing animals, secure handling of monitoring data, and support from villages around the park.</p></div>
- <div><h2 data-t="t48">Haplotypes and sex ratio</h2>
-  <p data-t="t49">Mitochondrial DNA passes only from mother to calf, so a haplotype survives only through its females. If haplotype 2 is rare, losing a few of its females can erase it. The model follows each female line, so you can see whether a strategy keeps haplotype 2. Video-trap records from Ujung Kulon show a slightly male-biased population: 36 males and 32 females among 68 identified rhinos in 2019; among adults, 28 males to 23 females, about 1.2 males per female (Putra et al. 2020). The default population is therefore 53% male. With fewer females, fewer calves are born each year, and haplotype 2 rests on even fewer mothers.</p></div>
- <div><h2 data-t="t50">Model and limits</h2>
-  <p data-t="t51">Parameters follow the 2016 Javan rhino PHVA: first breeding at 7 years, last at 35, 33% of adult females breeding each year (falling to 16% near capacity), mortality of 15% for calves, 2% for ages 1–6 and 4% for adults, 80% of males in the breeding pool, 20% environmental variation and inbreeding depression of 6.29 lethal equivalents (this model applies half of this load to calf survival; Vortex by default treats the other half as lethal alleles that selection gradually removes, which this model leaves out). Run with the PHVA's own settings, it gives a mean of about 53 rhinos after 100 years (PHVA baseline mean 56). Poaching removes adults, three times more often males. Because breeding rises as numbers fall, poaching here hurts less than in the PHVA, which found 1% a year gave a 6% extinction risk and 2% a year a 68% risk over 100 years. Numbers are projections for comparing strategies, not forecasts.</p></div>
-</div></section>
-<section class="band" style="border-top:1px solid var(--line)"><div class="wrap">
-<h2 id="ckh">Model checks</h2>
-<div class="two" style="gap:28px">
- <div><h3 id="ck1h" style="margin:0 0 6px"></h3><p class="note" id="ck1p"></p><table id="ck1" style="width:100%;border-collapse:collapse;font-size:14px"></table><p class="note" id="ck1n" style="margin-top:8px"></p></div>
- <div><h3 id="ck2h" style="margin:0 0 6px"></h3><p class="note" id="ck2p"></p><svg id="ck2" viewBox="0 0 560 300" style="width:100%;height:auto;display:block" role="img"></svg><p class="note" id="ck2n" style="margin-top:8px"></p></div>
-</div>
+ <div><h2>Values used (Rp million / ha / year, 2025)</h2>
+  <div class="scroll"><table><thead><tr><th>Habitat</th><th>Low</th><th>Mid</th><th>High</th></tr></thead><tbody id="vt"></tbody></table></div>
+  <p class="note">Coral: Raja Ampat fisheries value (2020) low; Ujung Kulon reef-flat seaweed value mid (direct + existence, Wahyudin 2007 data); Gili Indah total economic value (2001 survey) high. Seagrass: Bintan fish-production value low, habitat value high (Wahyudin 2022). Values brought to 2025 rupiah with BPS annual inflation: 2001 × 3.65, 2007 × 2.23, 2020 × 1.15, 2022 × 1.07. Mid and high coral values are almost the same after this adjustment.</p></div>
+ <div><h2>Three cases and the proposed no-mining zone</h2>
+  <p><b>Expected:</b> 1–3 mines anywhere in the zone; little or no harm to the park. <b>Main risk:</b> 3 mines in the high-risk area. <b>Ceiling:</b> every high-risk site at once.</p>
+  <p>Distance is a poor rule: risky test sites lie 0.5–14.5 km from the park while many sites 1–3 km away are harmless, because currents decide where sediment goes. So the proposed no-mining zone is drawn from the plumes: 5 km cells around every test site that pushes park waters above 5 mg/L at 200 ton/day. <b>Highest risk (115 km²)</b>: both current data sets agree (5 sites). <b>At risk (775 km²)</b>: one of them flags it (33 more sites); idealised currents flag the bay toward Sumur and west of Panaitan, HYCOM flags the channel between Panaitan and the peninsula's north coast.</p>
+  <p class="note">HYCOM GOFS 3.1 currents, 2015–2024 seasonal means, 0–10 m. Turbidity check: Sentinel-2 red-band medians 2019–2024 around the north-coast river mouth shift east (away from the park) in the NW monsoon and south (toward it) in the SE monsoon, matching the idealised currents there. Before a zone is drawn into regulation, confirm with a high-resolution hydrodynamic model or drifters.</p></div>
+ <div><h2>How to read it</h2>
+  <p>Mining all 103 test sites at once is a theoretical ceiling, not a plan, so the default is a small number of mines. "Typical" and "1-in-10 bad" come from 300 random layouts of that many mines (all 103 sites for one mine), ranked by lost value; "Worst sites" puts the mines on the test sites that do the most damage on their own. Plumes from mines running together are added up. Only mining <b>outside</b> the park is modelled; WUP blocks that the decree draws inside the park are left out here. Damage is a fraction of yearly value where extra sediment stays above 5 mg/L (stress) or 20 mg/L (above the legal limit) for the 10-day average. Satellite temperature records show that almost all Indonesian waters had the potential for heat-driven coral bleaching in 2015–2019 (Gusviga et al. 2021), so sediment would add to an existing stress: the high setting reflects that.</p>
+  <p class="note">Underwater noise: source levels of 172–187 dB re 1 µPa at 1 m span measured cutter-suction and trailing-suction-hopper dredgers. Thresholds: 120 dB for marine-mammal disturbance by continuous noise (NMFS) and 150 dB for fish behaviour. Sound fades by 15 log(distance) (practical spreading) from sources in water shallower than 200 m and by 19 log(distance) from deeper sources, calibrated so a 190 dB deep-water mine falls to 120 dB at about 5 km, the middle of the 4–6 km modelled by Williams et al. (2022). It stops at land, and loses frequencies below the shallow-water cut-off over shallow seabed (sand bottom, energy assumed spread across 20–1000 Hz). Depths from SRTM15+ at about 500 m. Reef larvae react to much quieter noise than these thresholds, so they are not a safe limit for reefs. Sites 200 m or deeper are modelled as a deep-sea mining system, following Williams et al. (2022), who modelled one nodule-mining operation as above 120 dB within 4–6 km and above calm-weather background (about 94 dB) out to about 500 km, helped by the deep sound channel near 1 km depth. They expect even these figures to be underestimates, because shallow-water surrogates miss energy below 100 Hz and leave out sonar and support vessels.</p>
+  <p class="note">Noise on land: dredger sound power of 112 dBA (cutter suction) and 115 dBA (trailing suction hopper), with 118 dBA as a loud case, from a New Zealand port dredging assessment. Sound fades by 20 log(distance) plus 8 dB for a source over a reflective sea, 2 dB/km air absorption, and about 0.05 dB/m (the 500 Hz value) through the first 200 m of dense forest (ISO 9613-2). Shown only on land. Thresholds: about 40 dBA, where wildlife responses begin in published studies, and 50 dBA, the Indonesian limit for green open space. No noise threshold is known for Javan rhinos.</p>
+  <p class="note">Screening only: idealised currents, digitised WUP (±250 m), assumed release rates and loss fractions, simplified sound model. Not an AMDAL.</p></div>
 </div></section>
 
 <section class="band" style="border-top:1px solid var(--line)"><div class="wrap">
-<h2 data-t="t52">Sources</h2>
+<h2>Sources</h2>
 <ol class="src">
-<li data-t="t53">Haryono M., Miller P.S., Lees C. et al. (eds) 2016. <i>Population and Habitat Viability Assessment for the Javan Rhino</i>. IUCN/SSC Conservation Breeding Specialist Group. Source of model parameters.</li>
-<li data-t="t54">Putra W.P.B., Syamsudin M. &amp; Firdaus A.Y. 2020. Population structure analysis of Javan rhinoceros at Ujung Kulon National Park, West Java. <i>Buletin Plasma Nutfah</i> 26(2): 103–108. Source of the 1.2:1 male:female sex ratio (68 rhinos, 2019).</li>
-<li>Santiapillai C. &amp; Suprahman H. 1986. The proposed translocation of the Javan rhinoceros. <i>Biological Conservation</i> 38: 11–19.</li>
-<li data-t="t55">ANTARA, 2025. Ministry of Forestry estimate of 87–100 Javan rhinos; Operation Merah Putih translocation to JRSCA.</li>
-<li data-t="t56">International Rhino Foundation / IUCN SSC Asian Rhino Specialist Group, 2025. Javan rhino estimate falls from 76 to about 50 after 26 rhinos were poached, mostly males.</li>
-<li data-t="t57">The Kathmandu Post, 2026. 104 rhinos translocated from Chitwan, 1986–2023. Thapa K. et al. 2013. <i>Oryx</i> 47: 345–351; Bardia decline from 67 in 2000 to 22 by 2008, and the Asian Rhino Specialist Group recommendation that founder populations exceed 100. Mongabay, 2017.</li>
+<li>Keputusan Menteri ESDM No. 65.K/MB.01/MEM.B/2026 tentang Wilayah Pertambangan Provinsi Banten (12 February 2026). Source of the Mining Business Area (WUP), digitised from the decree map.</li>
+<li>Peraturan Pemerintah No. 22 Tahun 2021 tentang Penyelenggaraan Perlindungan dan Pengelolaan Lingkungan Hidup, Lampiran VIII (baku mutu air laut). Source of the 20 mg/L suspended-solids limit for coral and seagrass.</li>
+<li>HYCOM Consortium. Global Ocean Forecasting System (GOFS) 3.1, 1/12° HYCOM + NCODA analysis. hycom.org. Source of the modelled ocean currents.</li>
+<li>European Space Agency, Copernicus Sentinel-2 MSI imagery, 2019–2024. Used for the turbidity check.</li>
+<li>Allen Coral Atlas, 2022. Benthic habitat maps (coral/algae, seagrass). allencoralatlas.org. Source of reef and seagrass areas.</li>
+<li>Arkham M.N., Wahyudin Y., Pahlevi M.R. &amp; Hutapea R.Y.F. 2020. Jasa penyedia ekosistem terumbu karang di Kawasan Suaka Alam Perairan Kepulauan Raja Ampat dari perspektif valuasi ekonomi. <i>Jurnal Kelautan</i> 13(3): 239–248. doi:10.21107/jk.v13i3.7921. Coral value, low (Rp 48.4 million/ha/year in 2020).</li>
+<li>Husni S. 2003. Nilai ekonomi ekosistem terumbu karang di Taman Wisata Alam Laut Gili Indah, Kabupaten Lombok Barat, NTB. <i>Agroteksos</i> 13(3): 165–173. Coral value, high (Rp 57.7 million/ha/year, surveyed 2001).</li>
+<li>Wahyudin Y. 2007. <i>An Economic Value of the Natural Seaweed Resources</i>. Institute for Applied Sustainable Development (IASD), Bogor. Coral value, mid (Ujung Kulon reef flat).</li>
+<li>Wahyudin Y. 2022. Analisis ekonomi keterkaitan ekosistem lamun dan sumberdaya ikan di Kawasan Konservasi Padang Lamun Pulau Bintan. <i>Jurnal Akuatika Indonesia</i> 7(2): 42–49. Seagrass values, low and high.</li>
+<li>Gusviga B.H., Subiyanto, Faizal I., Yusri S., Sari S.K. &amp; Purba N.P. 2021. Occurrence and prediction of coral bleaching based on ocean surface temperature anomalies and global warming in Indonesian waters. <i>IOP Conference Series: Earth and Environmental Science</i> 750: 012032.</li>
+<li>Badan Pusat Statistik (BPS). Annual consumer price index, used to bring values to 2025 rupiah.</li>
+<li>Tozer B., Sandwell D.T., Smith W.H.F., Olson C., Beale J.R. &amp; Wessel P. 2019. Global bathymetry and topography at 15 arc sec: SRTM15+. <i>Earth and Space Science</i> 6: 1847–1864. Water depths, via NOAA CoastWatch ERDDAP.</li>
+<li>UK Marine Management Organisation 2015. Modelled mapping of continuous underwater noise generated by activities (MMO 1097). Underwater noise source literature review: value table for anthropogenic sources. Dredger source levels (172–187 dB re 1 µPa at 1 m).</li>
+<li>Reine K.J., Clarke D., Dickerson C. &amp; Wikel G. 2014. <i>Characterization of Underwater Sounds Produced by Trailing Suction Hopper Dredges during Sand Mining and Pump-out Operations</i>. BOEM 2014-055 / ERDC/EL TR-14-3.</li>
+<li>NMFS (NOAA Fisheries) 2024. Summary of Marine Mammal Protection Act Acoustic Thresholds. 120 dB re 1 µPa behavioural threshold for continuous noise.</li>
+<li>Washington State Department of Transportation. Fish and marine mammal injury and disturbance thresholds. 150 dB RMS fish behaviour threshold.</li>
+<li>Williams R., Erbe C., Duncan A., Nielsen K., Washburn T. &amp; Smith C. 2022. Noise from deep-sea mining may span vast ocean areas. <i>Science</i> 377: 157–158. doi:10.1126/science.abo2804. Deep-sea mining source levels and ranges.</li>
+<li>UNESCO World Heritage Centre. Ujung Kulon National Park (inscribed 1991, criteria vii and x). whc.unesco.org/en/list/608.</li>
+<li>Smithsonian Ocean. Ujung Kulon National Park, Indonesia. ocean.si.edu. Reef-fish richness.</li>
+<li>Encyclopaedia Britannica. Ujung Kulon National Park. Green turtles.</li>
+<li>Khalifa et al. 2024. Identifikasi keberadaan dugong, habitat lamun, dan ancamannya di perairan Provinsi Banten. <i>Jurnal Aurelia</i> 6(2): 295–314. doi:10.15578/aj.v6i2.15021. Dugongs seen across the park's waters, most often around Handeuleum and between Panaitan and Peucang.</li>
+<li>From the air to the ocean: revealing cetacean assemblages in the southeastern Indian Ocean. <i>Frontiers in Marine Science</i> 2025. doi:10.3389/fmars.2025.1687272. Whales and dolphins off western Sumatra.</li>
+<li>Jensen F.B., Kuperman W.A., Porter M.B. &amp; Schmidt H. 2011. <i>Computational Ocean Acoustics</i>, 2nd ed. Springer. Shallow-water cut-off frequency.</li>
+<li>Hunt &amp; Associates. Noise Assessment Report (Appendix N), port dredging consent, Gisborne District Council, New Zealand. Airborne sound power of cutter suction (Lw 112 dBA) and trailing suction hopper (Lw 115 dBA) dredgers.</li>
+<li>ISO 9613-2:1996. Acoustics: attenuation of sound during propagation outdoors, Part 2: general method of calculation. Distance, air absorption and foliage attenuation.</li>
+<li>Shannon G., McKenna M.F., Angeloni L.M. et al. 2016. A synthesis of two decades of research documenting the effects of noise on wildlife. <i>Biological Reviews</i> 91: 982–1005. Terrestrial wildlife responses begin at about 40 dBA.</li>
+<li>Keputusan Menteri Negara Lingkungan Hidup No. KEP-48/MENLH/11/1996 tentang Baku Tingkat Kebisingan. 50 dBA limit for green open space (ruang terbuka hijau).</li>
+<li>Holles S., Simpson S.D., Radford A.N., Berten L. &amp; Lecchini D. 2013. Boat noise disrupts orientation behaviour in a coral reef fish. <i>Marine Ecology Progress Series</i> 485: 295–300.</li>
 </ol>
 </div></section>
+
 <section class="band" style="border-top:1px solid var(--line)"><div class="wrap nextsim">
- <div><div class="lab" data-t="mine0">Also in Ujung Kulon</div><p data-t="mine1">Sea mining off the park's coast is another recent threat. See how its impact could spread with real ocean currents.</p></div>
- <a class="back minebtn" href="../mining/index.html" data-t="mine">Explore sea mining simulation →</a>
+ <div><div class="lab">Also in Ujung Kulon</div><p>Only about 50–100 Javan rhinos remain, all of them in this park. Compare how protection, habitat recovery and captive breeding could help them recover.</p></div>
+ <a class="back minebtn" href="../javan/index.html">Explore rhino recovery simulation →</a>
 </div></section>
-</main>
 
-<script>window.I18N={"mine":"Jelajahi simulasi tambang laut →","mine0":"Juga di Ujung Kulon","mine1":"Tambang laut di lepas pantai taman nasional adalah ancaman terbaru lainnya. Lihat bagaimana dampaknya dapat menyebar mengikuti arus laut nyata.","t0": "← Kembali ke Halaman Utama", "t1": "Simulasi pemulihan badak jawa", "t2": "Jumlah badak jawa yang tersisa menentukan langkah selanjutnya. Simulasi ini memproyeksikan populasi Ujung Kulon dari dua angka awal dan membandingkan perlindungan penuh, pemulihan habitat, dan penangkaran JRSCA, termasuk kapan dimulai dan pertimbangan haplotipe mitokondria.", "t3": "Berapa yang tersisa?", "t4": "Pemerintah, 2025", "t5": "Perkiraan Kementerian Kehutanan untuk Ujung Kulon. Dimodelkan pada batas bawah, 87.", "t6": "76 individu diperkirakan pada 2022, dikurangi 26 badak (sebagian besar jantan) yang diakui pemburu telah dibunuh pada 2019–2023.", "t7": "Seberapa cepat betina dapat berkembang biak?", "t8": "Desy, betina liar di Ujung Kulon, telah melahirkan lima anak sejak 2013, rata-rata satu anak setiap 3,4 tahun. Angka ini sesuai dengan laju perkembangbiakan tahunan 33% yang digunakan dalam PHVA 2016. Sedangkan spesies Badak Sumatra di Suaka Rhino Sumatera (SRS) Way Kambas, induk paling berhasil, Ratu, melahirkan tiga anak pada 2012–2023, satu setiap 5,6 tahun. Rosa melahirkan satu anak setelah delapan kali keguguran, dan Delilah, yang lahir di suaka, melahirkan anak pertamanya pada 2023.", "t9": "Badak jawa", "t10": "Badak sumatera", "t11": "Belum ada catatan badak jawa berkembang biak di penangkaran, sehingga model memakai catatan Suaka Rhino Sumatera (SRS) untuk penangkaran. Laju dalam model: liar ≈ 0,33 kelahiran per betina dewasa per tahun; mirip SRS ≈ 0,12 (5 kelahiran dari 3 induk selama sekitar 42 tahun-betina usia kawin, 2012–2025).", "t12": "Preseden", "t13": "Nepal memindahkan 104 badak india bercula satu dari Chitwan pada 1986–2023 ke Bardia, Suklaphanta dan Koshi Tappu, 88 di antaranya ke Bardia. Badak di Bardia tetap turun dari 67 pada 2000 menjadi 22 pada 2008 saat lonjakan perburuan, sehingga lebih banyak badak didatangkan. <b style=\"color:#ff4b3e\">Lokasi baru dapat diusulkan jika perlindungan kawasan terjamin.</b>", "t14": "Dengan 54 badak, mereka menyarankan menunggu hingga populasi mencapai sekitar 80, lalu memulai pengembangbiakan semi-alami beberapa individu di dalam kawasan taman nasional.", "t15": "Simulasi skenario", "t16": "Setiap simulasi menghitung setiap badak, tahun demi tahun dari 2026 hingga 2126: kelahiran, kematian, perkawinan sedarah, dan garis keturunan mitokondria. Garis oranye membiarkan perburuan berlanjut; empat garis lainnya mengasumsikan perlindungan penuh (tanpa perburuan lagi). 200 simulasi per strategi; garis menunjukkan median seluruh simulasi.", "t17": "Populasi", "t18": "Jantan dalam populasi: <b id=\"maleV\"></b>", "t19": "Betina pembawa haplotipe 2: <b id=\"h2V\"></b>", "t20": "Daya dukung Ujung Kulon", "t21": "Ancaman", "t22": "Laju perburuan dalam skenario perburuan (individu dewasa dibunuh per tahun, sebagian besar jantan). Laju perburuan 2019–2023 (26 badak dibunuh) sekitar 7% per tahun.", "t23": "Tsunami atau bencana (1% per tahun, membunuh separuh populasi) dan wabah penyakit (2% per tahun, membunuh 10%)", "t24": "Penangkaran di JRSCA", "t24n": "JRSCA (Javan Rhino Study and Conservation Area)", "t25": "Tahun mulai", "t26": "Individu pendiri yang ditangkap dari Ujung Kulon", "t27": "Betina, haplotipe 1", "t28": "Betina, haplotipe 2", "t29": "Jantan", "t30": "Kinerja perkembangbiakan di lokasi", "t31": "Daya tampung lokasi penangkaran", "t32": "Kematian saat penangkapan per individu: <b id=\"capV\"></b>", "t33": "Tambahkan satu jantan dari Ujung Kulon setiap 8 tahun", "t34": "Target pemulihan", "t35": "80: ukuran yang ditetapkan Santiapillai &amp; Suprahman (1986) sebelum translokasi apa pun. 100: ukuran yang direkomendasikan Asian Rhino Specialist Group untuk populasi badak baru di Nepal.", "t36": "Populasi awal", "t37": "Strategi", "t38": "Mencapai target", "t39": "Risiko kepunahan", "t40": "Haplotipe 2 bertahan", "t41": "Keragaman genetik tersisa", "t42": "Kapan penangkaran sebaiknya dimulai?", "t43": "Perlindungan penuh, pemulihan habitat, dan penangkaran di JRSCA sekaligus, dengan pengaturan di atas, hanya mengubah tahun mulai.", "t44": "Pendiri dipindahkan", "t45": "Kelompok JRSCA bertahan pada 2126", "t46": "Arti \"perlindungan penuh\" di sini", "t47": "Dalam model, ini berarti tidak ada badak yang diburu mulai 2027. Dalam PHVA 2016, kematian individu dewasa adalah parameter yang paling berpengaruh terhadap pertumbuhan, dan perburuan adalah satu-satunya ancaman yang membuat populasi dalam model punah. Dalam praktiknya, ini memerlukan patroli intensif Rhino Protection Unit, pemantauan kamera jebak yang dapat mendeteksi badak yang hilang, pengamanan data pemantauan, dan dukungan desa-desa di sekitar taman nasional.", "t48": "Haplotipe dan rasio jenis kelamin", "t49": "DNA mitokondria hanya diwariskan dari induk ke anak, sehingga suatu haplotipe hanya bertahan melalui betinanya. Jika haplotipe 2 jarang, kehilangan beberapa betinanya dapat menghapusnya. Model ini mengikuti setiap garis keturunan betina, sehingga terlihat apakah suatu strategi mempertahankan haplotipe 2. Rekaman video trap di Ujung Kulon menunjukkan populasi yang sedikit lebih banyak jantan: 36 jantan dan 32 betina dari 68 badak yang teridentifikasi pada 2019; di antara individu dewasa, 28 jantan dan 23 betina, sekitar 1,2 jantan per betina (Putra dkk. 2020). Karena itu, populasi bawaan dalam model terdiri dari 53% jantan. Dengan lebih sedikit betina, lebih sedikit anak yang lahir setiap tahun, dan haplotipe 2 bergantung pada lebih sedikit induk.", "t50": "Model dan keterbatasannya", "t51": "Parameter mengikuti PHVA badak jawa 2016: kawin pertama pada umur 7 tahun, terakhir pada 35 tahun, 33% betina dewasa berkembang biak setiap tahun (turun menjadi 16% saat mendekati daya dukung), kematian 15% untuk anak, 2% untuk umur 1–6 tahun dan 4% untuk dewasa, 80% jantan ikut kawin, variasi lingkungan 20%, dan depresi perkawinan sedarah sebesar 6,29 lethal equivalents (model ini menerapkan separuh beban tersebut pada kelangsungan hidup anak; secara bawaan Vortex memperlakukan separuh lainnya sebagai alel letal yang perlahan tersingkir oleh seleksi, dan bagian ini tidak dimodelkan di sini). Dengan pengaturan PHVA sendiri, model menghasilkan rata-rata sekitar 53 badak setelah 100 tahun (rata-rata baseline PHVA 56). Perburuan menyasar individu dewasa, tiga kali lebih sering jantan. Karena laju kelahiran naik saat jumlah turun, dampak perburuan di sini lebih ringan daripada di PHVA, yang menemukan perburuan 1% per tahun memberi risiko kepunahan 6% dan 2% per tahun memberi risiko 68% dalam 100 tahun. Angka-angka ini adalah proyeksi untuk membandingkan strategi, bukan ramalan.", "t52": "Sumber", "t53": "Haryono M., Miller P.S., Lees C. dkk. (ed.) 2016. <i>Population and Habitat Viability Assessment for the Javan Rhino</i>. IUCN/SSC Conservation Breeding Specialist Group. Sumber parameter model.", "t54": "Putra W.P.B., Syamsudin M. &amp; Firdaus A.Y. 2020. Population structure analysis of Javan rhinoceros at Ujung Kulon National Park, West Java. <i>Buletin Plasma Nutfah</i> 26(2): 103–108. Sumber rasio jantan:betina 1,2:1 (68 badak, 2019).", "t55": "ANTARA, 2025. Perkiraan Kementerian Kehutanan sebanyak 87–100 badak jawa; translokasi Operasi Merah Putih ke JRSCA.", "t56": "International Rhino Foundation / IUCN SSC Asian Rhino Specialist Group, 2025. Perkiraan badak jawa turun dari 76 menjadi sekitar 50 setelah 26 badak diburu, sebagian besar jantan.", "t57": "The Kathmandu Post, 2026. 104 badak ditranslokasi dari Chitwan, 1986–2023. Thapa K. dkk. 2013. <i>Oryx</i> 47: 345–351; penurunan di Bardia dari 67 pada 2000 menjadi 22 pada 2008, dan rekomendasi Asian Rhino Specialist Group agar populasi pendiri lebih dari 100. Mongabay, 2017."};</script>
-<script id="pvasrc" type="text/plain">// Javan rhino individual-based PVA (Vortex-style), after Haryono et al. 2016 PHVA parameters.
-// Works in a browser Web Worker and in Node (module.exports).
-var PVA = (function () {
-  function rng(seed) { let a = seed >>> 0; return function () { a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
-  function norm(R) { let u = 0, v = 0; while (!u) u = R(); v = R(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
-
-  const MAXS = 480; // kinship slots for living animals
-
-  function run(P, seed) {
-    const R = rng(seed);
-    const Y = P.years;
-    const kin = new Float32Array(MAXS * MAXS);
-    const free = []; for (let i = MAXS - 1; i >= 0; i--) free.push(i);
-    const pop = []; // living animals
-    const out = { uk: new Int16Array(Y + 1), s2: new Int16Array(Y + 1), h2: new Uint8Array(Y + 1), gd: [], ext: false, capLost: 0, exLost: 0, founders: 0, foundersH2: 0, overflow: false };
-    function newSlot() { if (!free.length) { out.overflow = true; return -1; } return free.pop(); }
-    function K(a, b) { return kin[a * MAXS + b]; }
-    function setK(a, b, v) { kin[a * MAXS + b] = v; kin[b * MAXS + a] = v; }
-
-    // ---- founders at Ujung Kulon
-    const N0 = P.N0, nM = Math.round(N0 * P.maleFrac), nF = N0 - nM;
-    const nAd = Math.round(N0 * 0.76);
-    function rndAge(adult) { return adult ? 8 + Math.floor(Math.pow(R(), 1.6) * 28) : Math.floor(R() * 8); }
-    const sexes = []; for (let i = 0; i < nM; i++) sexes.push(1); for (let i = 0; i < nF; i++) sexes.push(0);
-    for (let i = sexes.length - 1; i > 0; i--) { const j = Math.floor(R() * (i + 1)); [sexes[i], sexes[j]] = [sexes[j], sexes[i]]; }
-    // females: assign haplotype H2 to a fraction
-    let fIdx = 0; const nH2 = Math.round(nF * P.h2Frac);
-    const hapOrder = []; for (let i = 0; i < nF; i++) hapOrder.push(i < nH2 ? 2 : 1);
-    for (let i = hapOrder.length - 1; i > 0; i--) { const j = Math.floor(R() * (i + 1)); [hapOrder[i], hapOrder[j]] = [hapOrder[j], hapOrder[i]]; }
-    let mIdx = 0; const nMH2 = Math.round(nM * P.h2Frac);
-    for (let i = 0; i < N0; i++) {
-      const s = newSlot(); const sex = sexes[i];
-      const hap = sex ? (mIdx++ < nMH2 ? 2 : 1) : hapOrder[fIdx++];
-      pop.push({ s, sex, age: rndAge(i < nAd), hap, site: 1, F: 0 });
-    }
-    for (const a of pop) for (const b of pop) setK(a.s, b.s, a === b ? 0.5 * (1 + P.F0) : P.k0);
-
-    const Kuk = (y) => (P.Kgain && P.startYear + y >= P.KgainYear ? P.Kuk + P.Kgain : P.Kuk);
-    const pLow = P.pWild, pHigh = P.pWild * 0.485;
-
-    function breed(site, Ksite, pBase) {
-      let N = 0; const fem = [], mal = [];
-      for (const a of pop) if (a.site === site) { N++; if (a.age >= 7 && a.age <= 35) (a.sex ? mal : fem).push(a); }
-      if (!fem.length || !mal.length) return;
-      const base = site === 1 ? pBase : P.second.pBreed;
-      const hi = base * 0.485;
-      let p = base - (base - hi) * Math.pow(Math.min(1, N / Ksite), 4);
-      p *= Math.max(0, 1 + 0.2 * norm(R));
-      // 80% of adult males in the breeding pool
-      const pool = mal.filter(() => R() < 0.8); if (!pool.length) pool.push(mal[Math.floor(R() * mal.length)]);
-      for (const d of fem) {
-        if (R() >= p) continue;
-        const sire = pool[Math.floor(R() * pool.length)];
-        const s = newSlot(); if (s < 0) return;
-        const F = K(d.s, sire.s);
-        for (const x of pop) { const v = 0.5 * (K(d.s, x.s) + K(sire.s, x.s)); kin[s * MAXS + x.s] = v; kin[x.s * MAXS + s] = v; }
-        kin[s * MAXS + s] = 0.5 * (1 + F);
-        pop.push({ s, sex: R() < 0.5 ? 1 : 0, age: -1, hap: d.hap, site, F, born: true });
-      }
-    }
-
-    function kill(i) { const a = pop[i]; free.push(a.s); pop[i] = pop[pop.length - 1]; pop.pop(); }
-
-    function mortality(site, ev, extra) {
-      for (let i = pop.length - 1; i >= 0; i--) {
-        const a = pop[i]; if (a.site !== site) continue;
-        let m;
-        if (a.age < 0) m = 1 - (1 - (P.mCalf == null ? 0.15 : P.mCalf) * ev) * Math.exp(-0.5 * P.LE * a.F);
-        else if (a.age < 7) m = (P.mJuv == null ? 0.02 : P.mJuv) * ev; else m = (P.mAd == null ? 0.04 : P.mAd) * ev;
-        if (a.age >= 40) m = 1;
-        m = 1 - (1 - Math.min(1, m)) * (1 - extra);
-        if (R() < m) kill(i);
-      }
-    }
-
-    function poach(site, rate) {
-      if (rate <= 0) return;
-      const ad = []; for (const a of pop) if (a.site === site && a.age >= 5) ad.push(a);
-      let n = 0; for (let i = 0; i < ad.length; i++) if (R() < rate) n++;
-      // male-biased (poachers took mostly males): males 3x more likely to be picked
-      const mw = P.poachMaleW == null ? 3 : P.poachMaleW;
-      while (n-- > 0) {
-        let tot = 0; for (const a of pop) if (a.site === site && a.age >= 5) tot += a.sex ? mw : 1;
-        if (!tot) break; let r = R() * tot;
-        for (let i = 0; i < pop.length; i++) { const a = pop[i]; if (a.site !== site || a.age < 5) continue; r -= a.sex ? mw : 1; if (r <= 0) { kill(i); break; } }
-      }
-    }
-
-    function truncate(site, Ks) {
-      let N = 0; for (const a of pop) if (a.site === site) N++;
-      while (N > Ks) { const idx = []; for (let i = 0; i < pop.length; i++) if (pop[i].site === site) idx.push(i); kill(idx[Math.floor(R() * idx.length)]); N--; }
-    }
-
-    function moveToSecond(pred, n, founder) {
-      let moved = 0;
-      for (let k = 0; k < n; k++) {
-        const cand = []; for (let i = 0; i < pop.length; i++) if (pred(pop[i])) cand.push(i);
-        if (!cand.length) break;
-        const i = cand[Math.floor(R() * cand.length)];
-        if (R() < P.second.capMort) { if (founder) out.capLost++; else out.exLost++; kill(i); continue; }
-        pop[i].site = 2; moved++;
-      }
-      return moved;
-    }
-
-    function gd() { // gene diversity = 1 - mean kinship (incl. self)
-      const n = pop.length; if (!n) return 0; let s = 0;
-      for (const a of pop) for (const b of pop) s += K(a.s, b.s);
-      return 1 - s / (n * n);
-    }
-
-    const S2 = P.second;
-    const count = () => { let u = 0, t = 0, h = 0; for (const a of pop) { if (a.site === 1) u++; else t++; if (a.hap === 2 && a.sex === 0) h = 1; } return [u, t, h]; };
-    let c = count(); out.uk[0] = c[0]; out.s2[0] = c[1]; out.h2[0] = c[2]; out.gd.push(gd());
-
-    for (let y = 1; y <= Y; y++) {
-      const year = P.startYear + y;
-      // establish second site / captive breeding
-      if (S2 && S2.on && year === S2.start) {
-        const ad = (a, sex, hap) => a.site === 1 && a.sex === sex && a.age >= 7 && a.age <= 22 && (hap ? a.hap === hap : true);
-        const m2 = moveToSecond(a => ad(a, 0, 2), S2.fH2, true);
-        const m1 = moveToSecond(a => ad(a, 0, 1), S2.fH1, true);
-        const mm = moveToSecond(a => ad(a, 1, 0), S2.m, true);
-        out.founders = m1 + m2 + mm; out.foundersH2 = m2;
-      }
-      if (S2 && S2.on && S2.exch && year > S2.start && (year - S2.start) % S2.exch === 0) {
-        moveToSecond(a => a.site === 1 && a.sex === 1 && a.age >= 7 && a.age <= 25, 1);
-      }
-      // breeding
-      breed(1, Kuk(y), pLow);
-      if (S2 && S2.on && year >= S2.start) breed(2, S2.K2, S2.pBreed);
-      // mortality with environmental variation and catastrophes
-      for (const site of [1, 2]) {
-        if (site === 2 && !(S2 && S2.on && year >= S2.start)) continue;
-        const ev = Math.max(0, 1 + 0.2 * norm(R));
-        let extra = 0;
-        if (P.disease && R() < 0.02) extra = 1 - (1 - extra) * 0.9;
-        if (site === 1 && P.cat && R() < 0.01) extra = 1 - (1 - extra) * 0.5;
-        if (site === 2 && P.cat2 && R() < 0.01) extra = 1 - (1 - extra) * 0.5;
-        mortality(site, ev, extra);
-      }
-      // poaching
-      const pr = year >= P.protectYear ? P.poachAfter : P.poach;
-      poach(1, pr); if (S2 && S2.on) poach(2, S2.poach || 0);
-      for (const a of pop) a.age++;
-      truncate(1, Kuk(y)); if (S2 && S2.on) truncate(2, S2.K2);
-      c = count(); out.uk[y] = c[0]; out.s2[y] = c[1]; out.h2[y] = c[2];
-      if (y % 10 === 0) out.gd.push(gd());
-      if (!pop.length) { for (let z = y + 1; z <= Y; z++) { out.uk[z] = 0; out.s2[z] = 0; out.h2[z] = 0; } while (out.gd.length < Y / 10 + 1) out.gd.push(0); out.ext = true; break; }
-    }
-    return out;
-  }
-
-  function summarize(runs, P, target) {
-    const Y = P.years, n = runs.length;
-    const med = [], lo = [], hi = [], medUK = [], medS2 = [];
-    const q = (arr, p) => { const s = arr.slice().sort((a, b) => a - b); return s[Math.min(s.length - 1, Math.floor(p * (s.length - 1) + 0.5))]; };
-    let rec = null, below = null, uk100 = null;
-    for (let y = 0; y <= Y; y++) {
-      const tot = runs.map(r => r.uk[y] + r.s2[y]);
-      med.push(q(tot, 0.5)); lo.push(q(tot, 0.1)); hi.push(q(tot, 0.9));
-      medUK.push(q(runs.map(r => r.uk[y]), 0.5)); medS2.push(q(runs.map(r => r.s2[y]), 0.5));
-      if (rec === null && y > 0 && tot.filter(v => v >= target).length / n >= 0.5) rec = P.startYear + y;
-      if (below === null && y > 0 && med[y] < target) below = P.startYear + y;
-      if (uk100 === null && runs.filter(r => r.uk[y] >= 100).length / n >= 0.5) uk100 = P.startYear + y;
-    }
-    const pExt = runs.filter(r => r.ext).length / n;
-    const pH2 = runs.filter(r => r.h2[Y]).length / n;
-    const gd0 = runs.reduce((s, r) => s + r.gd[0], 0) / n;
-    const gdEnd = runs.reduce((s, r) => s + r.gd[r.gd.length - 1], 0) / n;
-    const capLost = runs.reduce((s, r) => s + r.capLost, 0) / n;
-    const founders = runs.reduce((s, r) => s + r.founders, 0) / n;
-    const fH2 = runs.reduce((s, r) => s + r.foundersH2, 0) / n;
-    const at = (yr) => { const y = yr - P.startYear; return y >= 0 && y <= Y ? runs.filter(r => r.uk[y] + r.s2[y] >= target).length / n : null; };
-    const pS2ext = P.second && P.second.on ? runs.filter(r => r.s2[Y] === 0).length / n : null;
-    return { med, lo, hi, medUK, medS2, rec, below, uk100, above0: P.N0 >= target, pExt, pH2, gd0, gdEnd, capLost, founders, fH2, p2050: at(2050), p2075: at(2075), pS2ext, overflow: runs.some(r => r.overflow) };
-  }
-
-  function simulate(P, iters, target, seed0) {
-    const runs = []; for (let i = 0; i < iters; i++) runs.push(run(P, (seed0 || 1) * 7919 + i * 104729));
-    return summarize(runs, P, target);
-  }
-
-  return { run, simulate, summarize };
-})();
-if (typeof module !== 'undefined' && module) module.exports = PVA;
-</script>
 <script>
 {
 const $=id=>document.getElementById(id);
-let LANG='en';try{if(localStorage.getItem('jrLang')==='id')LANG='id'}catch(e){}
-const T=(en,id)=>LANG==='id'?id:en;
-const f1=v=>LANG==='id'?v.toFixed(1).replace('.',','):v.toFixed(1);
-// ---------- breeding timeline: one row per mother
-function drawTL(){
- const svg=$('tl'),x0=150,x1=700,y0=2012,y1=2027,X=y=>x0+(y-y0)/(y1-y0)*(x1-x0);
- const rows=[
-  {m:'Desy',sub:T('Wild, Ujung Kulon','Liar, Ujung Kulon'),col:'#e8783f',c:[[2013,'Arjuna'],[2015,'Arum'],[2018,'Hawa'],[2024,'Syauki'],[2026.78,T('Oct 2026','Okt 2026')]]},
-  {m:'Ratu',sub:T('Control, SRS','Kontrol, SRS'),col:'#6fb7ff',c:[[2012.48,'Andatu'],[2016.36,'Delilah'],[2023.75,'Anggi']]},
-  {m:'Rosa',sub:T('Control, SRS','Kontrol, SRS'),col:'#6fb7ff',c:[[2022.23,'Sedah Mirah']]},
-  {m:'Delilah',sub:T('Control, SRS','Kontrol, SRS'),col:'#6fb7ff',c:[[2023.9,'Indra']]}];
- const top=34,gap=62,H=top+gap*rows.length+16;svg.setAttribute('viewBox',`0 0 720 ${H}`);
- let h='';
- for(let y=2012;y<=2026;y+=2){h+=`<line x1="${X(y)}" x2="${X(y)}" y1="14" y2="${H-30}" stroke="rgba(242,241,234,.10)"/><text x="${X(y)}" y="${H-10}" fill="#a3a89d" font-size="12" font-family="Space Mono,monospace" text-anchor="middle">${y}</text>`}
- rows.forEach((r,k)=>{const cy=top+k*gap+8;
-  if(k===1)h+=`<line x1="0" x2="${x1}" y1="${cy-34}" y2="${cy-34}" stroke="rgba(242,241,234,.18)" stroke-dasharray="3 4"/>`;
-  h+=`<text x="0" y="${cy-2}" fill="#f2f1ea" font-size="14" font-family="Space Grotesk,sans-serif" font-weight="600">${r.m}</text><text x="0" y="${cy+15}" fill="#a3a89d" font-size="12" font-family="Inter,sans-serif">${r.sub}</text>`;
-  h+=`<line x1="${x0}" x2="${x1}" y1="${cy}" y2="${cy}" stroke="${r.col}" stroke-opacity=".45"/>`;
-  r.c.forEach(([y,n],i)=>{h+=`<circle cx="${X(y)}" cy="${cy}" r="8" fill="${r.col}"/><text x="${X(y)}" y="${cy-14}" fill="#f2f1ea" font-size="12" font-family="Inter,sans-serif" text-anchor="${X(y)>660?'end':'middle'}">${n}</text>`});
- });
- svg.innerHTML=h;
+const st={curs:'SE',cur:'max',n:3,plc:'risk',one:[],risk:[],pick:new Set(),combo:new Set(),F:null,rate:200,season:'Worst',val:'mid',l5:.10,l20:.50,deep:true,lay:{cur:true,plume:true,excl:true,hab:true,wup:true,sites:true,mpa:true},noise:0,anoise:0,k:1,ox:0,oy:0,hover:null};
+const fmtRp=v=>v>=1000?`Rp ${(v/1000).toFixed(1)} tn`:`Rp ${v.toFixed(1)} bn`;
+let D=null,PM=null,SP=[0,0],NS=0,MD=[],K=0,HK,PK,AC,LAY={};const GN=['NW','SE','Trans'];
+let SAT=null,RH=null;fetch('rhino.png').then(r=>r.blob()).then(b=>{const i=new Image();i.onload=()=>{RH=i;draw()};i.src=URL.createObjectURL(b)}).catch(()=>{});
+fetch('sat.jpg').then(r=>r.blob()).then(b=>{const i=new Image();i.onload=()=>{SAT=i;draw()};i.src=URL.createObjectURL(b)}).catch(()=>{});
+let DEP=null,PLAND=null;fetch('depth.json').then(r=>r.json()).then(d=>{const b=bytes(d.b64);DEP=new Float32Array(b.length);for(let i=0;i<b.length;i++){const q=b[i];DEP[i]=q===0?0:q<=100?q:100+(q-100)*12}PLAND=new Uint8Array(b.length);(d.parkland||[]).forEach(c=>PLAND[c]=1);if(D)upd()}).catch(()=>{});
+fetch('mapdata.json').then(r=>r.json()).then(d=>{D=d;init()}).catch(()=>{$('scen').textContent='Map data could not load.'});
+function bytes(b64){const s=atob(b64),a=new Uint8Array(s.length);for(let i=0;i<s.length;i++)a[i]=s.charCodeAt(i);return a}
+function mb(a){return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function lay(n,pool,seed){pool=pool||[...Array(NS).keys()];const key=n+':'+pool.join(',');if(LAY[key])return LAY[key];const r=mb((seed||65)+n),out=[],P=pool.length;for(let m=0;m<300;m++){const a=pool.slice();for(let i=0;i<n;i++){const j=i+Math.floor(r()*(P-i));[a[i],a[j]]=[a[j],a[i]]}out.push(a.slice(0,n).sort((x,y)=>x-y))}return LAY[key]=out}
+const MS=()=>st.cur==='ideal'?[0]:st.cur==='hycom'?[1]:[0,1];
+function acc(combo,s,arr,tmp){arr.fill(0);const ms=MS();for(const [n,mi] of ms.entries()){const m=MD[mi],a=n?tmp:arr;if(n)a.fill(0);for(const k of combo){const o=k*3+s;for(let t=m.KO[o];t<m.KO[o+1];t++)a[m.KI[t]]+=m.KV[t]}if(n)for(let i=0;i<K;i++)if(a[i]>arr[i])arr[i]=a[i]}}
+function met(combo){const R=st.rate/100;let g;
+ if(st.season==='Worst'){for(let s=0;s<3;s++)acc(combo,s,AC[s],AC[4]);g=AC[3];for(let i=0;i<K;i++)g[i]=Math.max(AC[0][i],AC[1][i],AC[2][i])}else{g=AC[0];acc(combo,GN.indexOf(st.season),g,AC[4])}
+ const z=[[0,0,0,0],[0,0,0,0],[0,0,0,0]];D.hab.forEach(([i,j,c,s,zn],h)=>{const v=g[HK[h]]*R;if(v>20){z[zn][1]+=c;z[zn][3]+=s}else if(v>5){z[zn][0]+=c;z[zn][2]+=s}});
+ let rp=0,eq=0;const zr=z.map(r=>{const e=econ(...r);rp+=e.rp;eq+=e.eq;return e.rp});
+ let a=0,b=0;for(const k of PK){const v=g[k]*R;if(v>=5)a++;if(v>=20)b++}
+ return{rp,eq,z,zr,pk5:a*25,pk20:b*25}}
+function full(combo){const n=D.gw*D.gh,f=[0,1,2].map(()=>new Float64Array(n)),tmp=new Float64Array(n);
+ for(let s=0;s<3;s++)for(const [q,mi] of MS().entries()){const m=MD[mi],a=q?tmp:f[s];if(q)a.fill(0);for(const k of combo){const o=k*3+s;for(let t=m.OFF[o];t<m.OFF[o+1];t++)a[m.SI[t]]+=m.SV[t]}if(q)for(let i=0;i<n;i++)if(a[i]>f[s][i])f[s][i]=a[i]}
+ if(st.season!=='Worst')return f[GN.indexOf(st.season)];const g=new Float64Array(n);for(let i=0;i<n;i++)g[i]=Math.max(f[0][i],f[1][i],f[2][i]);return g}
+// ---- underwater noise (screening estimate) ----
+// TL = 15 log10(r) practical spreading + low-frequency cut-off over shallow seabed (Pekeris waveguide, sand bottom); land blocks.
+const NZ={cache:{},RMAX:50000,STEP:250,RAYS:720};
+function cutLoss(h){if(h<=0)return Infinity;const fc=1500/(4*h*Math.sqrt(1-(1500/1700)**2));if(fc<=20)return 0;if(fc>=1000)return Infinity;return -10*Math.log10((Math.log(1000)-Math.log(fc))/(Math.log(1000)-Math.log(20)))}
+function siteTL(k){if(NZ.cache[k])return NZ.cache[k];const gw=D.gw,gh=D.gh,T=new Float32Array(gw*gh).fill(Infinity),s=D.sites[k];
+ const dep=(x,y)=>{const j=Math.floor(x/50),i=Math.floor((Hh-y)/50);if(i<0||j<0||i>=gh||j>=gw)return -1;return DEP[i*gw+j]};
+ const h0=dep(s.x,s.y),KS=h0>=200?19:15;for(let a=0;a<NZ.RAYS;a++){const th=a/NZ.RAYS*2*Math.PI,dx=Math.cos(th),dy=Math.sin(th);let hmin=h0>0?h0:2;
+  for(let r=NZ.STEP;r<=NZ.RMAX;r+=NZ.STEP){const x=s.x+dx*r/10,y=s.y+dy*r/10,h=dep(x,y);if(h<0)break;if(h===0)break;if(h<hmin)hmin=h;
+   const tl=KS*Math.log10(r)+cutLoss(hmin);if(!isFinite(tl))break;const j=Math.floor(x/50),i=Math.floor((Hh-y)/50),c=i*gw+j;if(tl<T[c])T[c]=tl}}
+ const j0=Math.floor(s.x/50),i0=Math.floor((Hh-s.y)/50);if(i0>=0&&j0>=0&&i0<gh&&j0<gw)T[i0*gw+j0]=Math.min(T[i0*gw+j0],15*Math.log10(125));
+ return NZ.cache[k]=T}
+const DEEP_SL=10*Math.log10(Math.pow(10,18.8)+Math.pow(10,18.3)+Math.pow(10,18.1));
+function noiseGrid(combo){const n=D.gw*D.gh,E=new Float64Array(n);let reach=0,nd=0;const rings=[];
+ for(const k of combo){const T=siteTL(k),s=D.sites[k];let rk=0;const dpt=siteDepth(s)||0,dp=st.deep&&dpt>=200;if(dp)nd++;const SL=dp?Math.max(st.noise,DEEP_SL):st.noise;for(let c=0;c<n;c++){const t=T[c];if(t===Infinity)continue;const rl=SL-t;if(rl<110)continue;E[c]+=Math.pow(10,rl/10);
+   if(rl>=120){const i=Math.floor(c/D.gw),j=c%D.gw,d=Math.hypot((j+.5)*50-s.x,(Hh-(i+.5)*50)-s.y)*10;if(d>reach)reach=d;if(d>rk)rk=d}}rings.push({x:s.x,y:s.y,r:(rk+250)/10})}
+ const RL=new Float32Array(n);for(let c=0;c<n;c++)RL[c]=E[c]>0?10*Math.log10(E[c]):0;
+ const mk=document.createElement('canvas');mk.width=D.gw;mk.height=D.gh;const mx=mk.getContext('2d'),im=mx.createImageData(D.gw,D.gh);for(let c=0;c<n;c++)if(RL[c]>=120)im.data.set([255,255,255,255],c*4);mx.putImageData(im,0,0);
+ return{RL,reach,rings,mask:mk,nd}}
+// airborne: Lp = Lw - 20 log10(d) - 8 (hemispherical, reflective sea) - 2 dB/km air absorption - 0.05 dB/m foliage over first 200 m of forest (ISO 9613-2)
+const AZ={cache:{},RMAX:8000,STEP:100,RAYS:720};
+function siteAir(k){if(AZ.cache[k])return AZ.cache[k];const gw=D.gw,gh=D.gh,A=new Float32Array(gw*gh).fill(Infinity),s=D.sites[k];
+ for(let a=0;a<AZ.RAYS;a++){const th=a/AZ.RAYS*2*Math.PI,dx=Math.cos(th),dy=Math.sin(th);let land=0;
+  for(let r=AZ.STEP;r<=AZ.RMAX;r+=AZ.STEP){const x=s.x+dx*r/10,y=s.y+dy*r/10,j=Math.floor(x/50),i=Math.floor((Hh-y)/50);if(i<0||j<0||i>=gh||j>=gw)break;const c=i*gw+j;
+   if(DEP[c]===0)land+=AZ.STEP;else if(land>0)land=Math.max(0,land-0);const att=20*Math.log10(r)+8+0.002*r+0.05*Math.min(land,200);if(DEP[c]===0&&att<A[c])A[c]=att}}
+ return AZ.cache[k]=A}
+function airGrid(combo){const n=D.gw*D.gh,E=new Float64Array(n),Lw=st.anoise;let reach=0;
+ for(const k of combo){const A=siteAir(k),s=D.sites[k];for(let c=0;c<n;c++){const t=A[c];if(t===Infinity)continue;const lp=Lw-t;if(lp<30)continue;E[c]+=Math.pow(10,lp/10)}}
+ const L=new Float32Array(n);for(let c=0;c<n;c++)L[c]=E[c]>0?10*Math.log10(E[c]):0;return{L}}
+function siteDepth(s){if(!DEP)return null;const j=Math.floor(s.x/50),i=Math.floor((Hh-s.y)/50);return DEP[i*D.gw+j]}
+function init(){
+ PM=bytes(D.parkmask);NS=D.sites.length;
+ {const n=D.gw*D.gh,pos=new Int32Array(n).fill(-1);let c=0;HK=D.hab.map(([i,j])=>{const x=i*D.gw+j;if(pos[x]<0)pos[x]=c++;return pos[x]});PK=[];for(let x=0;x<n;x++)if(PM[x]){if(pos[x]<0)pos[x]=c++;PK.push(pos[x])}K=c;
+  for(const sp of [D.sp,D.sph]){const ib=bytes(sp.idx),SI=new Uint16Array(ib.buffer),vb=bytes(sp.val),SV=new Float64Array(vb.length);for(let i=0;i<vb.length;i++)SV[i]=0.01*Math.pow(10,vb[i]/40);const OFF=sp.off;
+   const ki=[],kv=[],KO=[0];for(let o=0;o<OFF.length-1;o++){for(let t=OFF[o];t<OFF[o+1];t++){const p=pos[SI[t]];if(p>=0){ki.push(p);kv.push(SV[t])}}KO.push(ki.length)}MD.push({SI,SV,OFF,KI:Int32Array.from(ki),KV:Float64Array.from(kv),KO})}
+  AC=[0,1,2,3,4].map(()=>new Float64Array(K))}
+ seg('cur',[['max','Precautionary'],['ideal','Idealised monsoon'],['hycom','HYCOM']],st.cur,v=>{st.cur=v});
+ seg('nm',[[1,'1'],[3,'3'],[5,'5'],[10,'10'],['all','All']],st.n,v=>{st.n=v==='all'?'all':+v;if(st.plc==='pick'||(st.n==='all'&&!['risk','typ'].includes(st.plc)))setSeg('plc',st.plc='risk')});
+ seg('plc',[['risk','High-risk area'],['typ','Anywhere: typical'],['bad','Anywhere: 1-in-10 bad'],['worst','Worst sites'],['pick','Your pick']],st.plc,v=>{st.plc=v;if(v==='pick')setSeg('nm',null)});
+ seg('rate',D.rates.map(r=>[r,`${r} ton/day`]),st.rate,v=>st.rate=+v);
+ seg('season',[['Worst','Worst of year'],['NW','NW monsoon'],['SE','SE monsoon'],['Trans','Transition']],st.season,v=>st.season=v);
+ seg('noise',[[0,'Off'],[172,'172 dB: quieter dredger'],[180,'180 dB'],[187,'187 dB: hopper dredger']],st.noise,v=>st.noise=+v);
+ $('deepsys').onchange=e=>{st.deep=e.target.checked;upd()};
+ seg('anoise',[[0,'Off'],[112,'112 dBA: cutter dredger'],[115,'115 dBA: hopper dredger'],[118,'118 dBA: loud']],st.anoise,v=>st.anoise=+v);
+ seg('val',[['low','Low'],['mid','Mid'],['high','High']],st.val,v=>st.val=v);
+ seg('curs',[['NW','NW<span class="l"> monsoon</span>'],['SE','SE<span class="l"> monsoon</span>'],['Trans','Trans<span class="l">ition</span>']],st.curs,v=>{st.curs=v;st.lay.cur=true;const c=document.querySelector('#layers [data-k=cur]');if(c)c.checked=true});
+ $('layers').innerHTML=[['cur','Currents'],['plume','Plume'],['excl','No-mining zone'],['hab','Reef / seagrass'],['wup','Mining zone'],['sites','Test sites'],['mpa','MPA']].map(([k,t])=>`<label><input type="checkbox" data-k="${k}" checked> ${t}</label>`).join('');
+ $('layers').addEventListener('change',e=>{st.lay[e.target.dataset.k]=e.target.checked;draw()});
+ $('l5').oninput=e=>{st.l5=e.target.value/100;upd()};$('l20').oninput=e=>{st.l20=e.target.value/100;upd()};
+ const V=D.params.V;
+ $('vt').innerHTML=[['Coral / reef flat','coral'],['Seagrass','seagrass']].map(([t,k])=>`<tr><td>${t}</td>${['low','mid','high'].map(l=>`<td>${V[k+'_'+l].toFixed(0)}</td>`).join('')}</tr>`).join('');
+ new ResizeObserver(draw).observe($('fig'));upd();
 }
-drawTL();
-// ---------- model checks (computed offline with this model: 500 runs for the hindcast, 300 per sensitivity value)
-const CK={hind:[[1980,'54–70',53,42],[1984,'50–54',58,46],[2013,'54–56',59,57],[2014,'58–61',59,56]],
- base:[['PHVA baseline, K = 60, mean after 100 years','Baseline PHVA, K = 60, rata-rata setelah 100 tahun','56','53'],['K = 80, mean after 100 years','K = 80, rata-rata setelah 100 tahun','74','72']],
- // label EN, ID, range tested, rhinos in 2126 (low, high), growth at low numbers %/yr (low, high)
- sens:[['Poaching','Perburuan','0–7% (PHVA: 1–2%)',1,47,-0.8,2.7],['Adult mortality','Kematian dewasa','2–8%',14,54,0.1,3.6],['Carrying capacity','Daya dukung','40–80 rhinos',28,66,2.7,2.7],['Female breeding rate','Laju berkembang biak betina','25–40%',28,54,1.0,3.6],['Inbreeding','Perkawinan sedarah','3.1–9 LE',41,53,2.4,3.0],['First-year mortality','Kematian tahun pertama','10–20%',43,49,2.4,2.9],['Share of males','Proporsi jantan','50–60%',44,49,1.6,2.7]]};
-function drawChecks(){
- $('ckh').textContent=T('Model checks','Pengujian model');
- $('ck1h').textContent=T('Does it reproduce past counts?','Apakah model meniru hitungan masa lalu?');
- $('ck1p').textContent=T('Following the PHVA, the model was re-run from about 30 rhinos in 1970 (carrying capacity 60, no poaching, no catastrophes) and compared with survey estimates and with the PHVA’s own model.','Mengikuti PHVA, model dijalankan ulang dari sekitar 30 badak pada 1970 (daya dukung 60, tanpa perburuan, tanpa bencana) lalu dibandingkan dengan hasil survei dan model PHVA sendiri.');
- const th=s=>`<th style="text-align:left;border-bottom:1px solid var(--line);padding:6px 4px;font-weight:600">${s}</th>`,td=(s,b)=>`<td style="border-bottom:1px solid var(--line);padding:6px 4px;text-align:left${b?';font-weight:700;color:var(--acc)':''}">${s}</td>`;
- $('ck1').innerHTML='<tr>'+[T('Year','Tahun'),T('Survey','Survei'),T('PHVA model','Model PHVA'),T('This model','Model ini')].map(th).join('')+'</tr>'+CK.hind.map(r=>'<tr>'+td(r[0])+td(r[1])+td(r[2])+td(r[3],1)+'</tr>').join('')
-  +'<tr>'+[T('Forward check','Uji ke depan'),'PHVA','',''].map(th).join('')+'</tr>'+CK.base.map(r=>'<tr>'+td(T(r[0],r[1]))+td(r[2])+td('')+td(r[3],1)+'</tr>').join('');
- $('ck1n').textContent=T('It matches the recent surveys (2013–2014) and the PHVA’s 100-year projections, but grows more slowly than the 1980–1984 counts. The PHVA notes those older surveys used different methods and are less reliable. With catastrophe and disease risk added, the 2013 median falls to 52, because a few runs suffer a disaster.','Model sesuai dengan survei terbaru (2013–2014) dan proyeksi 100 tahun PHVA, tetapi tumbuh lebih lambat daripada hitungan 1980–1984. PHVA mencatat survei lama memakai metode berbeda dan kurang dapat diandalkan. Jika risiko bencana dan penyakit ditambahkan, median 2013 turun menjadi 52 karena sebagian simulasi mengalami bencana.');
- $('ck2h').textContent=T('Which assumptions matter most?','Asumsi mana yang paling berpengaruh?');
- $('ck2p').textContent=T('One value at a time was changed across the range the PHVA tested, keeping everything else at the baseline (starting at 58 rhinos, carrying capacity 60). Each bar shows how many rhinos remain after 100 years at the two ends of that range; the dot is the baseline (47). A longer bar means that assumption matters more.','Satu nilai diubah dalam rentang yang diuji PHVA, sementara yang lain tetap pada nilai dasar (mulai 58 badak, daya dukung 60). Setiap batang menunjukkan jumlah badak setelah 100 tahun pada kedua ujung rentang; titik adalah nilai dasar (47). Batang lebih panjang berarti asumsi itu lebih berpengaruh.');
- const W=560,L=210,R=470,mx=70,x=v=>L+v/mx*(R-L),rows=CK.sens,rh=36;let h=`<g font-size="12" fill="var(--mute)" font-family="Space Mono,monospace">`;
- for(let v=0;v<=mx;v+=10){h+=`<line x1="${x(v)}" x2="${x(v)}" y1="18" y2="${20+rows.length*rh}" stroke="var(--line)"/><text x="${x(v)}" y="12" text-anchor="middle">${v}</text>`}
- h+=`<text x="${W-2}" y="12" text-anchor="end">${T('growth','tumbuh')}</text></g>`;
- const pct=v=>(v>0?'+':'')+v.toFixed(1).replace('.',LANG==='id'?',':'.');
- rows.forEach((r,i)=>{const y=20+i*rh+rh/2,a=x(r[3]),b=x(r[4]);
-  h+=`<text x="${L-10}" y="${y-2}" text-anchor="end" font-size="13" fill="var(--ink)">${T(r[0],r[1])}</text><text x="${L-10}" y="${y+13}" text-anchor="end" font-size="11" fill="var(--mute)">${LANG==='id'?r[2].replace('rhinos','badak'):r[2]}</text>`;
-  h+=`<rect x="${a}" y="${y-7}" width="${Math.max(3,b-a)}" height="14" rx="3" fill="var(--acc)" opacity=".85"/>${r[3]<5?`<text x="${a+5}" y="${y+4}" font-size="11" fill="#10120f" font-family="Space Mono,monospace">${r[3]}</text>`:`<text x="${a-6}" y="${y+4}" text-anchor="end" font-size="11" fill="var(--mute)" font-family="Space Mono,monospace">${r[3]}</text>`}<text x="${b+6}" y="${y+4}" font-size="11" fill="var(--mute)" font-family="Space Mono,monospace">${r[4]}</text><circle cx="${x(47)}" cy="${y}" r="4" fill="var(--ink)"/>`;
-  h+=`<text x="${W-2}" y="${y+4}" text-anchor="end" font-size="11" fill="var(--mute)" font-family="Space Mono,monospace">${r[5]===r[6]?pct(r[5])+'%':pct(r[5])+' to '.replace(' to ',LANG==='id'?' s.d. ':' to ')+pct(r[6])+'%'}</text>`});
- h+=`<text x="${(L+R)/2}" y="${36+rows.length*rh}" text-anchor="middle" font-size="12" fill="var(--mute)">${T('rhinos after 100 years (median)','jumlah badak setelah 100 tahun (median)')}</text>`;
- $('ck2').setAttribute('viewBox',`0 0 ${W} ${44+rows.length*rh}`);$('ck2').innerHTML=h;
- $('ck2n').textContent=T('Poaching, adult mortality and carrying capacity matter most for how many rhinos there will be, then the breeding rate; inbreeding, first-year mortality and the sex ratio matter less. This matches the PHVA, which found adult mortality and breeding rate drive growth, with inbreeding and carrying capacity having a milder effect, and showed that losing habitat to Arenga palm (carrying capacity falling 1–2% a year for 20 years) lowers numbers and turns growth negative. The right column gives growth per year when numbers are low: carrying capacity does not change it, because space only limits a population once it is near full, but it sets the final size. Poaching was not part of the PHVA’s sensitivity test; the PHVA modelled it separately at 1% and 2% a year. At the 2019–2023 pace of 7% a year it outweighs every biological uncertainty and is the only setting that turns growth negative. In this model 1–2% poaching hurts less than in the PHVA, because breeding rises as numbers fall. Runs include catastrophe and disease risk.','Perburuan, kematian dewasa dan daya dukung paling menentukan jumlah badak, disusul laju berkembang biak; perkawinan sedarah, kematian tahun pertama dan rasio jenis kelamin lebih kecil pengaruhnya. Ini sesuai dengan PHVA, yang menemukan kematian dewasa dan laju berkembang biak paling menentukan pertumbuhan, sementara perkawinan sedarah dan daya dukung berpengaruh lebih ringan, serta menunjukkan bahwa hilangnya habitat akibat langkap (Arenga; daya dukung turun 1–2% per tahun selama 20 tahun) menurunkan jumlah dan membuat pertumbuhan negatif. Kolom kanan menunjukkan pertumbuhan per tahun saat jumlah rendah: daya dukung tidak mengubahnya karena ruang baru membatasi populasi saat hampir penuh, tetapi menentukan jumlah akhir. Perburuan tidak termasuk uji sensitivitas PHVA; PHVA memodelkannya terpisah pada 1% dan 2% per tahun. Dengan laju 2019–2023 sebesar 7% per tahun, pengaruhnya melebihi semua ketidakpastian biologis dan hanya pengaturan ini yang membuat pertumbuhan negatif. Dalam model ini, perburuan 1–2% berdampak lebih ringan daripada di PHVA karena laju kelahiran naik saat jumlah turun. Simulasi memasukkan risiko bencana dan penyakit.')}
-drawChecks();
-// ---------- controls
-const st={n0c:false,n0:87,male:53,h2:25,kuk:80,poach:0,cat:true,start:2028,fH1:3,fH2:2,fM:3,perf:.33,k2:20,cap:5,exch:true,tgt:80};st.poach=.07;
-function seg(id,opts,key){const el=$(id);el.innerHTML=opts.map(([v,t])=>`<button type="button" data-v="${v}" aria-pressed="${v==st[key]}">${t}</button>`).join('');
- el.onclick=e=>{const b=e.target.closest('button');if(!b)return;el.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b));st[key]=+b.dataset.v;go()}}
-function segs(){
-seg('n0',[[87,T('Gov. ~87','Pemerintah ~87')],[50,'IUCN ≈50']],'n0');
-{const el=$('n0'),inp=document.createElement('input');inp.type='number';inp.min=10;inp.max=200;inp.step=1;inp.inputMode='numeric';inp.className='segin';inp.placeholder=T('Custom','Kustom');inp.setAttribute('aria-label',T('Custom starting population (10–200)','Populasi awal kustom (10–200)'));el.appendChild(inp);
- if(st.n0c)inp.value=st.n0;
- const mark=()=>{el.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',!st.n0c&&+x.dataset.v===st.n0));inp.classList.toggle('on',st.n0c)};
- const apply=()=>{if(inp.value===''){return}let v=Math.round(+inp.value);if(!isFinite(v)||v<10)v=10;if(v>200)v=200;inp.value=v;st.n0c=true;mark();if(v!==st.n0){st.n0=v;go()}};
- el.onclick=e=>{const b=e.target.closest('button');if(!b)return;st.n0c=false;inp.value='';st.n0=+b.dataset.v;mark();go()};
- inp.onchange=apply;inp.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();apply();inp.blur()}};mark()}
-seg('kuk',[[60,'60 (PHVA 2015)'],[80,'80'],[100,'100']],'kuk');
-seg('perf',[[.33,T('Wild-like (Desy)','Mirip alam (Desy)')],[.12,T('SRS-like','Mirip SRS')]],'perf');
-seg('k2',[[10,T('10 rhinos','10 badak')],[20,T('20 rhinos','20 badak')]],'k2');
-seg('poach',[[.01,'1% (PHVA)'],[.02,'2% (PHVA)'],[.07,'7% (2019–2023)']],'poach');
-seg('tgt',[[80,'80 (Santiapillai 1986)'],[100,'100 (ASRSG)']],'tgt');}
-segs();
-const opt=(id,a,b,v)=>{$(id).innerHTML=Array.from({length:b-a+1},(_,i)=>`<option${a+i==v?' selected':''}>${a+i}</option>`).join('')};
-$('start').innerHTML=[2027,2028,2029,2030,2032,2035,2040].map(y=>`<option${y==st.start?' selected':''}>${y}</option>`).join('');
-opt('fH1',0,6,3);opt('fH2',0,4,2);opt('fM',1,5,3);
-const lbl=()=>{$('maleV').textContent=st.male+'%';$('h2V').textContent=st.h2+'%';$('capV').textContent=st.cap+'%'};
-[['male','male'],['h2','h2'],['cap','cap']].forEach(([id,k])=>$(id).addEventListener('input',e=>{st[k]=+e.target.value;lbl()}));
-[['male','male'],['h2','h2'],['cap','cap']].forEach(([id,k])=>$(id).addEventListener('change',()=>go()));
-['start','fH1','fH2','fM'].forEach(id=>$(id).addEventListener('change',e=>{st[id]=+e.target.value;go()}));
-$('cat').addEventListener('change',e=>{st.cat=e.target.checked;go()});
-$('exch').addEventListener('change',e=>{st.exch=e.target.checked;go()});
-lbl();
-
-const STR=[
- {k:'po',en:'Poaching continues, no other action',id:'Perburuan berlanjut, tanpa tindakan lain',c:'var(--c0)',hex:'#e8783f'},
- {k:'fp',en:'Full protection only',id:'Perlindungan penuh saja',c:'var(--c1)',hex:'#f2f1ea'},
- {k:'hb',en:'Protection + habitat (+20 capacity from 2030)',id:'Perlindungan + habitat (+20 daya dukung mulai 2030)',c:'var(--c2)',hex:'#8dffa8'},
- {k:'cb',en:'Protection + captive breeding',id:'Perlindungan + penangkaran',c:'var(--c3)',hex:'#6fb7ff'},
- {k:'all',en:'Protection + habitat + captive breeding',id:'Perlindungan + habitat + penangkaran',c:'var(--c4)',hex:'#c9a0ff'}];
-STR.forEach(s=>Object.defineProperty(s,'name',{get(){return T(s.en,s.id)}}));
-function legend(){$('leg').innerHTML='<b class="leghd">'+T('Scenario','Skenario')+'</b>'+STR.map(s=>`<span><i style="background:${s.hex}"></i>${s.name}</span>`).join('')+'<span><i style="background:repeating-linear-gradient(90deg,#a3a89d 0 4px,transparent 4px 8px)"></i>Target</span><span><i style="background:rgba(201,160,255,.35);height:10px"></i>'+T('10–90% of runs, all three actions','10–90% simulasi, ketiga tindakan')+'</span>';}
-legend();
-
-function params(kind,start){
- const Kuk=Math.max(st.kuk,st.n0);
- const P={N0:st.n0,maleFrac:st.male/100,h2Frac:st.h2/100,k0:0.0255,F0:0,Kuk,pWild:.33,LE:6.29,poach:st.poach,poachAfter:st.poach,protectYear:9999,cat:st.cat,cat2:st.cat,disease:st.cat,years:100,startYear:2026,second:null,Kgain:0,KgainYear:2030};
- if(kind!=='po'){P.protectYear=2027;P.poachAfter=0}
- if(kind==='hb'||kind==='all'){P.Kgain=20}
- if(kind==='cb'||kind==='all'){P.second={on:true,start:start||st.start,fH1:st.fH1,fH2:st.fH2,m:st.fM,K2:st.k2,pBreed:st.perf,capMort:st.cap/100,exch:st.exch?8:0,poach:0}}
- return P;
+function setSeg(id,v){$(id).querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x.dataset.v==String(v)))}
+function seg(id,opts,cur,cb){const el=$(id);el.innerHTML=opts.map(([v,t])=>`<button data-v="${v}" aria-pressed="${v==cur}">${t}</button>`).join('');
+ el.onclick=e=>{const b=e.target.closest('button');if(!b)return;el.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b));cb(b.dataset.v);upd()}}
+function econ(c5,c20,s5,s20){const V=D.params.V;const cl=c5*st.l5+c20*st.l20,sl=s5*st.l5+s20*st.l20;return{eq:cl+sl,rp:(cl*V['coral_'+st.val]+sl*V['seagrass_'+st.val])/1000}}
+function upd(){
+ if(!D)return;
+ $('l5v').textContent=Math.round(st.l5*100)+' %';$('l20v').textContent=Math.round(st.l20*100)+' %';
+ const cur=st.cur;st.cur='max';const one=[];for(let k=0;k<NS;k++)one.push(met([k]));
+ let combo=[],share=null;const n=st.n,PL={risk:'in the high-risk area',typ:'anywhere, typical layout',bad:'anywhere, 1-in-10 bad layout',worst:'on the worst sites'};
+ const risk=st.risk=[...Array(NS).keys()].filter(k=>one[k].pk5>0);
+ if(st.plc==='risk'){if(n==='all'||n>=risk.length)combo=risk.slice();else{const L=lay(n,risk,165),M=L.map(met),o=[...M.keys()].sort((a,b)=>M[a].rp-M[b].rp);combo=L[o[Math.floor(.5*(o.length-1))]]}}
+ else if(n==='all')combo=[...Array(NS).keys()];
+ else if(st.plc==='pick')combo=[...st.pick].sort((a,b)=>a-b);
+ else if(st.plc==='worst')combo=[...Array(NS).keys()].sort((a,b)=>one[b].rp-one[a].rp).slice(0,n).sort((a,b)=>a-b);
+ else{const L=n===1?[...Array(NS).keys()].map(k=>[k]):lay(n),M=n===1?one:L.map(met),o=[...M.keys()].sort((a,b)=>M[a].rp-M[b].rp);combo=L[o[Math.floor((st.plc==='typ'?.5:.9)*(o.length-1))]];share=M.filter(m=>m.pk5>0).length/M.length}
+ st.cur=cur;st.one=cur==='max'?one:[...Array(NS).keys()].map(k=>met([k]));
+ st.combo=new Set(combo);
+ $('lh').textContent=st.plc==='risk'?(n==='all'||n>=risk.length?`All ${risk.length} high-risk sites at once`:`${n} mine${n>1?'s':''} at once, ${PL.risk}`):n==='all'?'All 103 test sites at once (theoretical)':st.plc==='pick'?`Your pick: ${combo.length} mine${combo.length==1?'':'s'}`:`${n} mine${n>1?'s':''} at once, ${PL[st.plc]}`;
+ $('plcnote').textContent=st.plc==='risk'?`High-risk area = the ${risk.length} of 103 test sites that push park waters above 5 mg/L at ${st.rate} ton/day under either set of currents (the proposed no-mining zone). ${n==='all'||n>=risk.length?'All of them are mined here.':'Middle result of 300 random layouts of '+n+' mines inside it.'} Mines stay on the same sites whatever currents you choose; the currents only change where the mud goes.`:n==='all'?'Theoretical ceiling only: no plan would mine every test site together.':{typ:`The middle result of ${n===1?'all 103 single test sites':'300 random layouts of '+n+' mines'} in the mining zone.`,bad:`The 90th percentile of the same ${n===1?'103 sites':'300 random layouts'}: 1 layout in 10 is worse.`,worst:`The ${n===1?'test site':n+' test sites'} that do the most damage on their own, mined together.`,pick:'Tap test sites on the map to add or remove them.'}[st.plc];
+ $('plc').querySelectorAll('button').forEach(b=>b.disabled=n==='all'&&!['risk','typ'].includes(b.dataset.v));
+ $('share').textContent=share==null?'':`${Math.round(share*100)} % of ${n===1?'the 103 single sites':'300 random layouts'} push sediment in park waters above 5 mg/L at this rate and season.`;
+ const m=combo.length?met(combo):{rp:0,eq:0,z:[[0,0,0,0],[0,0,0,0],[0,0,0,0]],zr:[0,0,0],pk5:0,pk20:0};
+ const names=['Inside the park','Marine Protected Areas','Other coast'];
+ $('tb').innerHTML=m.z.map((r,ix)=>`<tr><td>${names[ix]}</td><td>${r[0]+r[2]} ha</td><td>${r[1]+r[3]} ha</td><td>${m.zr[ix].toFixed(1)}</td></tr>`).join('');
+ {let c5=0,c20=0,s5=0,s20=0,mp=0;m.z.forEach((r,ix)=>{c5+=r[0]+r[1];c20+=r[1];s5+=r[2]+r[3];s20+=r[3];if(ix===1)mp+=r[0]+r[1]+r[2]+r[3]});
+  $('bcor').textContent=Math.round(c5)+' ha';$('bsg').textContent=Math.round(s5)+' ha';$('bmpa').textContent=Math.round(mp)+' ha';$('bpk').textContent=Math.round(100*m.pk5/(PK.length*25))+' %';
+  $('bionote').textContent=combo.length?`Of these, ${Math.round(c20)} ha of coral and ${Math.round(s20)} ha of seagrass are above the 20 mg/L legal limit (PP 22/2021). Seagrass is the dugong's main food.`:''}
+ $('annual').textContent=fmtRp(m.rp);$('npv').textContent=fmtRp(m.rp*D.params.AF);$('eqha').textContent=Math.round(m.eq)+' ha';$('pk5').textContent=m.pk5+' ha';$('pk20').textContent=m.pk20+' ha';
+ $('scen').textContent=`${st.rate} ton/day of fines per mine · ${$('season').querySelector('[aria-pressed=true]').textContent} · ${$('cur').querySelector('[aria-pressed=true]').textContent} currents`;
+ $('valnote').textContent=`Coral Rp ${D.params.V['coral_'+st.val].toFixed(0)} M, seagrass Rp ${D.params.V['seagrass_'+st.val].toFixed(0)} M per ha per year`;
+ st.F=combo.length?full(combo):null;
+ st.N=st.noise&&DEP&&combo.length?noiseGrid(combo):null;
+ $('nzbox').hidden=$('nzleg').hidden=!st.noise;
+ if(st.noise){if(!DEP){$('nznote').textContent='Depth data is still loading.'}else if(!st.N){['nz120','nz150','nzhab','nzr'].forEach(id=>$(id).textContent='–');$('nznote').textContent='No mines in this scenario.'}else{const R=st.N.RL;let a=0,b=0,h=0;for(let c=0;c<R.length;c++)if(PM[c]){if(R[c]>=120)a++;if(R[c]>=150)b++}
+  for(const [i,j,c2,s2] of D.hab){if(R[i*D.gw+j]>=150)h+=c2+s2}
+  $('nz120').textContent=(a*0.25).toFixed(1)+' km²';$('nz150').textContent=(b*0.25).toFixed(1)+' km²';$('nzhab').textContent=Math.round(h)+' ha';$('nzr').textContent=st.N.reach>=NZ.RMAX-NZ.STEP?'30+ km':(st.N.reach/1000).toFixed(1)+' km';
+  $('nznote').textContent=`${st.N.nd===combo.length?`All ${combo.length} mine${combo.length>1?'s are':' is'} in water 200 m or deeper, so each is modelled as a deep-sea mining system of about ${Math.round(DEEP_SL)} dB and the dredger setting above does not change the result (untick the box to use it)`:`${st.noise} dB at 1 m for every dredger${st.N.nd?`, about ${Math.round(DEEP_SL)} dB for the ${st.N.nd} deep-water site${st.N.nd>1?'s':''}`:''}`}; noise from all ${combo.length} mine${combo.length>1?'s':''} added together. Above calm-weather background noise (about 94 dB) it would be audible across this whole map, and some whales react below 120 dB. Sound fades by 15 log(distance) from shallow sites and faster from sites deeper than 200 m, stops at land and loses its lowest notes over shallow seabed (SRTM15+ depths). Real levels depend on the dredger, the work it is doing and the seabed; a hydrophone survey would replace this estimate.`}}
+ st.A=st.anoise&&DEP&&combo.length?airGrid(combo):null;
+ $('anbox').hidden=$('aleg').hidden=!st.anoise;
+ if(st.anoise){if(!DEP){$('annote').textContent='Map data is still loading.'}else if(!st.A){$('an40').textContent=$('an50').textContent=$('anmax').textContent=$('anco').textContent=$('an30').textContent='–';$('annote').textContent='No mines in this scenario.'}else{const L=st.A.L;let a=0,b=0,mx=0,co=0,a3=0;for(let c=0;c<L.length;c++){if(PLAND[c]){if(L[c]>=30)a3++;if(L[c]>=40)a++;if(L[c]>=50)b++;if(L[c]>mx)mx=L[c]}else if(DEP[c]===0&&L[c]>=40)co++}
+  $('anmax').textContent=mx>=30?Math.round(mx)+' dBA':'below 30 dBA';$('an30').textContent=(a3*0.25).toFixed(1)+' km²';$('anco').textContent=(co*0.25).toFixed(1)+' km²';
+  $('an40').textContent=(a*0.25).toFixed(1)+' km²';$('an50').textContent=(b*0.25).toFixed(1)+' km²';
+  $('annote').textContent=`${st.anoise} dBA sound power for every dredger, all ${combo.length} added together, working day and night. Over open sea the noise falls to 40 dBA about ${(Math.pow(10,(st.anoise-8-40)/20)/1000).toFixed(1)} km away (less with air absorption); dense forest removes up to 10 dB more in its first 200 m. The nearest test site is about 2.7 km from the park's land, so dredger engines are unlikely to reach wildlife-disturbing levels in the park forest; boats, lights at night and shore facilities are not included. Surf and wind on the coast can mask part of the noise.`}}
+ siteCard();draw();
 }
-// ---------- worker
-let W=null,job=0;
-try{W=new Worker(URL.createObjectURL(new Blob([$('pvasrc').textContent+`
-onmessage=e=>{const {id,list,iters,target}=e.data;for(const it of list){const s=PVA.simulate(it.P,iters,target,it.seed);postMessage({id,key:it.key,s})}postMessage({id,done:true})}`],{type:'text/javascript'})));W.onerror=()=>{W=null;run()}}catch(e){W=null}
-let PVAlocal=null;
-function localRun(list,iters,target,cb,done){if(!PVAlocal){const f=new Function('const module=undefined;'+$('pvasrc').textContent+';return PVA;');PVAlocal=f.call({})}
- let i=0;const step=()=>{if(i>=list.length){done();return}const it=list[i++];cb(it.key,PVAlocal.simulate(it.P,iters,target,it.seed));setTimeout(step,0)};step()}
-function runJobs(list,iters,target,cb,done){const id=++job;
- if(W){W.onmessage=e=>{if(e.data.id!==job)return;if(e.data.done)done();else cb(e.data.key,e.data.s)};W.postMessage({id,list,iters,target})}
- else localRun(list,iters,target,(k,s)=>{if(id===job)cb(k,s)},()=>{if(id===job)done()})}
-
-let R={},timer=null,DONE=false,SW={},SWdone=false;
-function go(){clearTimeout(timer);timer=setTimeout(run,150)}
-function run(){
- R={};$('swnote').textContent='';$('busy').textContent=T('running…','berjalan…');$('head').textContent=T('Running the model…','Menjalankan model…');DONE=false;SW={};SWdone=false;
- $('sw').innerHTML='<tr><td colspan="7" class="note">'+T('Waiting for the main run…','Menunggu simulasi utama…')+'</td></tr>';
- const SEED={po:11,fp:12,hb:13,cb:14,all:15};const list=STR.map(s=>({key:s.k,P:params(s.k),seed:SEED[s.k]}));
- runJobs(list,200,st.tgt,(k,s)=>{R[k]=s;draw();table()},()=>{$('busy').textContent='';DONE=true;headline();sweep()});
-}
-// ---------- chart
-function first100(){let b=null;for(const s2 of STR){const r=R[s2.k];if(!r)continue;const i=r.med.findIndex(v=>v>=100);if(i>0&&(!b||2026+i<b.yr))b={yr:2026+i,k:s2.k,name:s2.name}}return b}
+const W=10500,Hh=9000;
+function view(){const c=$('cv'),w=c.clientWidth,h=c.clientHeight,s=Math.min(w/W,h/Hh)*st.k;return{w,h,s,x0:(w-W*s)/2+st.ox,y0:(h-Hh*s)/2+st.oy}}
+function P(v,x,y){return[v.x0+x*v.s,v.y0+(Hh-y)*v.s]}
+function path(ctx,v,rings){ctx.beginPath();for(const r of rings){r.forEach(([x,y],i)=>{const[p,q]=P(v,x,y);i?ctx.lineTo(p,q):ctx.moveTo(p,q)});ctx.closePath()}}
+const CL=[[0,'#ffffff','No risk to park, or not mined'],[1,'#ffe14d','25–75 ha'],[100,'#ff9a1f','100–175 ha'],[200,'#ff3b30','200–275 ha'],[300,'#d61aff','300 ha or more']];
+function col(x){let c=CL[0][1];for(const [t,cc] of CL)if(x>=t)c=cc;return c}
 function draw(){
- const svg=$('cv'),W=svg.clientWidth,H=svg.clientHeight;if(!W)return;
- const pad={l:58,r:14,t:16,b:46},Y0=2026,Y1=2126;
- let maxV=st.tgt*1.15;for(const k in R)for(const v of R[k].hi)maxV=Math.max(maxV,v);maxV=Math.ceil(maxV/20)*20;
- const X=y=>pad.l+(y-Y0)/(Y1-Y0)*(W-pad.l-pad.r),Yv=v=>H-pad.b-(v/maxV)*(H-pad.t-pad.b);
- let h='';const small=W<520;
- for(let v=0;v<=maxV;v+=maxV>160?40:20)h+=`<line x1="${pad.l}" x2="${W-pad.r}" y1="${Yv(v)}" y2="${Yv(v)}" stroke="rgba(242,241,234,.08)"/><text x="${pad.l-6}" y="${Yv(v)+4}" fill="#a3a89d" font-size="11" text-anchor="end" font-family="Space Mono,monospace">${v}</text>`;
- for(let y=2026;y<=2126;y+=small?25:20)h+=`<text x="${X(y)}" y="${H-pad.b+18}" fill="#a3a89d" font-size="11" text-anchor="middle" font-family="Space Mono,monospace">${y}</text>`;
- h+=`<text x="${(pad.l+W-pad.r)/2}" y="${H-6}" fill="#a3a89d" font-size="12" text-anchor="middle" font-family="Space Mono,monospace">${T('Year','Tahun')}</text><text transform="translate(14,${(pad.t+H-pad.b)/2}) rotate(-90)" fill="#a3a89d" font-size="12" text-anchor="middle" font-family="Space Mono,monospace">${T('Individuals','Jumlah individu')}</text>`;
- h+=`<line x1="${pad.l}" x2="${W-pad.r}" y1="${Yv(st.tgt)}" y2="${Yv(st.tgt)}" stroke="#a3a89d" stroke-dasharray="4 4"/><text x="${W-pad.r-4}" y="${Yv(st.tgt)-6}" fill="#a3a89d" font-size="11" text-anchor="end" font-family="Space Mono,monospace">${T('target','target')} ${st.tgt}</text>`;
- const best=R.all;if(best){let a='',b='';best.hi.forEach((v,i)=>a+=`${i?'L':'M'}${X(Y0+i).toFixed(1)},${Yv(v).toFixed(1)}`);for(let i=best.lo.length-1;i>=0;i--)b+=`L${X(Y0+i).toFixed(1)},${Yv(best.lo[i]).toFixed(1)}`;h+=`<path d="${a}${b}Z" fill="rgba(201,160,255,.12)"/>`}
- for(const s of STR){const r=R[s.k];if(!r)continue;let d='';r.med.forEach((v,i)=>d+=`${i?'L':'M'}${X(Y0+i).toFixed(1)},${Yv(v).toFixed(1)}`);h+=`<path d="${d}" fill="none" stroke="${s.hex}" stroke-width="${s.k==='all'?3:2}" stroke-linejoin="round"/>`;
-  if(s.k==='cb'||s.k==='all'){/* founders mark */}}
- let lastLX=-1e9;const dots=[];for(const s2 of STR){const r=R[s2.k];if(!r)continue;const k=r.med.findIndex(v=>v>=100);if(k>0)dots.push({k,yr:2026+k,cx:X(2026+k),cy:Yv(r.med[k]),name:s2.name})}
- dots.sort((a,b)=>a.yr-b.yr);
- dots.forEach((d,i)=>{h+=`<g class="rdot" tabindex="0"><circle cx="${d.cx}" cy="${d.cy}" r="13" fill="transparent"/><circle cx="${d.cx}" cy="${d.cy}" r="5" fill="#ff4b3e" stroke="#0b0d0b" stroke-width="1.5"/><text class="ryr" x="${d.cx}" y="${d.cy+22}" fill="#ff4b3e" font-size="12" font-weight="700" font-family="Space Mono,monospace" text-anchor="middle" paint-order="stroke" stroke="#131813" stroke-width="4">${d.yr}</text></g>`;
-  const end=d.cx-pad.l>165||d.cx>W-190,tx=end?d.cx-8:d.cx+8,an=end?'end':'start',halo='paint-order="stroke" stroke="#131813" stroke-width="4" stroke-linejoin="round"';
-  if(i===0){h+=`<text x="${tx}" y="${d.cy-(end?12:30)}" fill="#ff4b3e" font-size="11" font-family="Space Mono,monospace" text-anchor="${an}" ${halo}>${T('rhino reintroduction possible','reintroduksi badak memungkinkan')}</text>`;lastLX=d.cx+170}
-  });
- h+=`<line x1="${X(st.start)}\" x2="${X(st.start)}" y1="${pad.t}" y2="${H-pad.b}" stroke="rgba(111,183,255,.35)" stroke-dasharray="2 4"/><text x="${X(st.start)+4}" y="${pad.t+10}" fill="#6fb7ff" font-size="11" font-family="Space Mono,monospace">${T('capture','penangkapan')} ${st.start}</text>`;
- svg.innerHTML=h;
+ if(!D)return;const c=$('cv'),dpr=devicePixelRatio||1,v=view();c.width=v.w*dpr;c.height=v.h*dpr;const ctx=c.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);
+ const cs=getComputedStyle(document.documentElement),cv=k=>cs.getPropertyValue(k).trim();
+ ctx.fillStyle='#14324a';ctx.fillRect(0,0,v.w,v.h);
+ if(SAT){const[a,b]=P(v,0,Hh);ctx.imageSmoothingEnabled=true;ctx.drawImage(SAT,a,b,W*v.s,Hh*v.s)}
+ ctx.save();ctx.beginPath();ctx.rect(0,0,v.w,v.h);for(const r of D.geo.land){r.forEach(([x,y],i)=>{const[p,q]=P(v,x,y);i?ctx.lineTo(p,q):ctx.moveTo(p,q)});ctx.closePath()}ctx.clip('evenodd');
+ if(st.lay.wup){path(ctx,v,D.geo.wup);ctx.fillStyle='rgba(242,193,78,.22)';ctx.fill('evenodd');ctx.strokeStyle='rgba(242,193,78,.9)';ctx.lineWidth=1.2;ctx.stroke()}
+ if(st.lay.hab){ctx.fillStyle=cv('--hab');const cz=50*v.s;for(const [i,j,c2,s2] of D.hab){const a=(c2+s2)/25;const[p,q]=P(v,j*50,Hh-i*50);ctx.globalAlpha=Math.min(.95,.45+a);ctx.fillRect(p,q,cz,cz)}ctx.globalAlpha=1}
+ ctx.restore();
+ path(ctx,v,D.geo.park);ctx.fillStyle='rgba(60,200,110,.16)';ctx.fill('evenodd');
+ path(ctx,v,D.geo.parkland);ctx.fillStyle='rgba(46,180,90,.38)';ctx.fill('evenodd');
+
+ if(RH){const w=1600,h=w*RH.height/RH.width,cx=4220,cy=3700;const[a,b]=P(v,cx-w/2,cy+h/2);ctx.globalAlpha=1;ctx.drawImage(RH,a,b,w*v.s,h*v.s);ctx.globalAlpha=1}
+ path(ctx,v,D.geo.mine);ctx.fillStyle='#8a2be2';ctx.fill();
+ if(st.lay.excl){path(ctx,v,D.geo.excl_prec);ctx.fillStyle='rgba(255,255,255,.10)';ctx.fill('evenodd');ctx.setLineDash([7,5]);ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();ctx.setLineDash([]);
+  path(ctx,v,D.geo.excl_core);ctx.fillStyle='rgba(255,255,255,.28)';ctx.fill('evenodd');ctx.strokeStyle='#fff';ctx.lineWidth=3;ctx.stroke()}
+ if(st.lay.plume&&st.F){const g=st.F,R=st.rate/100,o=document.createElement('canvas');o.width=D.gw;o.height=D.gh;const ox=o.getContext('2d'),im=ox.createImageData(D.gw,D.gh);
+  for(let i=0;i<g.length;i++){const mv=g[i]*R;if(mv<0.5)continue;const c=mv>=20?[150,0,20,235]:mv>=5?[235,50,30,215]:mv>=2?[255,150,40,185]:[255,230,120,140];im.data.set(c,i*4)}
+  ox.putImageData(im,0,0);ctx.imageSmoothingEnabled=false;const[a,b]=P(v,0,Hh);ctx.drawImage(o,a,b,W*v.s,Hh*v.s);ctx.imageSmoothingEnabled=true;
+  const cz=50*v.s;let n5=0,n20=0;ctx.lineWidth=Math.max(1.5,cz*0.12);
+  for(let i=0;i<g.length;i++){if(!PM[i])continue;const mv=g[i]*R;if(mv<5)continue;const r=Math.floor(i/D.gw),c=i%D.gw;const[p,q]=P(v,c*50,Hh-r*50);
+   if(mv>=20){ctx.fillStyle='rgba(255,43,214,.55)';ctx.fillRect(p,q,cz,cz);n20++}ctx.strokeStyle='#ff2bd6';ctx.strokeRect(p+ctx.lineWidth/2,q+ctx.lineWidth/2,cz-ctx.lineWidth,cz-ctx.lineWidth);n5++}
+  SP=[n5,n20]}
+ if(st.N){const R=st.N.RL,o=document.createElement('canvas');o.width=D.gw;o.height=D.gh;const ox=o.getContext('2d'),im=ox.createImageData(D.gw,D.gh);
+  for(let i=0;i<R.length;i++){const r=R[i];if(r<120)continue;im.data.set(r>=150?[40,110,255,200]:[120,200,255,95],i*4)}
+  ox.putImageData(im,0,0);ctx.imageSmoothingEnabled=false;const[a,b]=P(v,0,Hh);ctx.drawImage(o,a,b,W*v.s,Hh*v.s);ctx.imageSmoothingEnabled=true}
+ if(st.A){const L=st.A.L,o=document.createElement('canvas');o.width=D.gw;o.height=D.gh;const ox=o.getContext('2d'),im=ox.createImageData(D.gw,D.gh);
+  for(let i=0;i<L.length;i++){const r=L[i];if(r<30)continue;im.data.set(r>=50?[150,60,240,230]:r>=40?[200,120,255,200]:[235,215,255,120],i*4)}
+  ox.putImageData(im,0,0);ctx.imageSmoothingEnabled=false;const[a,b]=P(v,0,Hh);ctx.drawImage(o,a,b,W*v.s,Hh*v.s);ctx.imageSmoothingEnabled=true}
+ if(st.lay.mpa){ctx.font='600 12px Inter,sans-serif';for(const m of D.geo.mpa){path(ctx,v,m.r);ctx.strokeStyle=cv('--mpa');ctx.lineWidth=2;ctx.stroke();const[p,q]=P(v,m.cx,m.cy);ctx.fillStyle='#fff';ctx.fillText('MPA '+m.id,p+6,q-4)}}
+ if(st.lay.sites){const rr=Math.max(7,Math.min(13,6+v.s*60));ctx.textAlign='center';ctx.textBaseline='middle';ctx.font=`700 ${Math.round(rr*0.95)}px Inter,sans-serif`;
+  for(const [ix,s] of D.sites.entries()){const risk=st.one[ix]?st.one[ix].pk5:0,act=st.plc==='pick'||st.combo.has(ix),tot=act?risk:0;const[p,q]=P(v,s.x,s.y);const hv=ix===st.hover,inC=st.combo.has(ix);ctx.globalAlpha=st.plc==='pick'&&!inC&&st.combo.size?.6:1;
+   if(inC){ctx.beginPath();ctx.arc(p,q,(tot<1?6:rr)+5,0,7);ctx.lineWidth=3.5;ctx.strokeStyle='#fff';ctx.stroke();ctx.lineWidth=1.5;ctx.strokeStyle='#000';ctx.beginPath();ctx.arc(p,q,(tot<1?6:rr)+7,0,7);ctx.stroke()}
+   if(tot<1){ctx.beginPath();ctx.arc(p,q,hv||inC?6:3.5,0,7);ctx.fillStyle='rgba(255,255,255,.85)';ctx.fill();ctx.lineWidth=1;ctx.strokeStyle='#000';ctx.stroke();ctx.globalAlpha=1;continue}
+   ctx.beginPath();ctx.arc(p,q,hv?rr+3:rr,0,7);ctx.fillStyle=col(tot);ctx.fill();ctx.lineWidth=hv?3:2;ctx.strokeStyle='#111';ctx.stroke();
+   }
+  ctx.globalAlpha=1;
+  ctx.textAlign='start';ctx.textBaseline='alphabetic'}
+ ctx.fillStyle='#fff';ctx.font='600 13px Inter,sans-serif';for(const o of D.outlets){const[p,q]=P(v,o.x,o.y);ctx.beginPath();ctx.moveTo(p,q+7);ctx.lineTo(p-6,q-4);ctx.lineTo(p+6,q-4);ctx.closePath();ctx.fillStyle='#6a3d9a';ctx.fill();ctx.fillStyle='#fff'}
+ const[sx,sy]=P(v,500,300);ctx.fillStyle='#fff';ctx.fillRect(sx,sy-4,1000*v.s,4);ctx.font='12px Inter,sans-serif';ctx.fillText('10 km',sx,sy-8);
 }
-new ResizeObserver(draw).observe($('chart'));
-const recTxt=r=>r.above0?(r.below?T(`Above now; falls below in ${r.below}`,`Di atas sekarang; turun di bawah pada ${r.below}`):T('Above now; stays above','Di atas sekarang; tetap di atas')):(r.rec?r.rec:T('Not by 2126','Tidak sampai 2126'));
-const pct=v=>v==null?'–':(v<0.005&&v>0?'<1%':Math.round(v*100)+'%');
-function table(){
- $('tb').innerHTML=STR.map(s=>{const r=R[s.k];if(!r)return `<tr><td><span class="sw" style="background:${s.hex}"></span>${s.name}</td><td colspan="6" class="note">${T('running…','berjalan…')}</td></tr>`;
-  return `<tr><td><span class="sw" style="background:${s.hex}"></span>${s.name}</td><td class="num" data-l="${T('Reaches target','Mencapai target')}">${recTxt(r)}</td><td class="num" data-l="Median 2050">${r.med[24]}</td><td class="num" data-l="Median 2126">${r.med[100]}</td><td class="num" data-l="${T('Extinction risk','Risiko kepunahan')}">${pct(r.pExt)}</td><td class="num" data-l="${T('Haplotype 2 kept','Haplotipe 2 bertahan')}">${pct(r.pH2)}</td><td class="num" data-l="${T('Gene diversity kept','Keragaman genetik tersisa')}">${r.gd0?Math.round(r.gdEnd/r.gd0*100)+'%':'–'}</td></tr>`}).join('');
- const cb=R.cb;$('tnote').textContent=cb?T(`Captive breeding: on average ${cb.founders.toFixed(1)} of ${st.fH1+st.fH2+st.fM} founders reach the site and ${cb.capLost.toFixed(1)} die at capture; ${cb.fH2.toFixed(1)} of them are haplotype-2 females (fewer if not enough are of breeding age). "Reaches target" is the first year at least half the runs hold ${st.tgt} or more rhinos across both sites. Capacity at Ujung Kulon is set to at least the starting count (${Math.max(st.kuk,st.n0)}).`,`Penangkaran: rata-rata ${f1(cb.founders)} dari ${st.fH1+st.fH2+st.fM} pendiri sampai di lokasi dan ${f1(cb.capLost)} mati saat penangkapan; ${f1(cb.fH2)} di antaranya betina haplotipe 2 (lebih sedikit jika betina usia kawin tidak cukup). "Mencapai target" adalah tahun pertama ketika setidaknya separuh simulasi memiliki ${st.tgt} badak atau lebih di kedua lokasi. Daya dukung Ujung Kulon diatur minimal sama dengan jumlah awal (${Math.max(st.kuk,st.n0)}).`):'';
-}
-function headline(){
- const a=R.po,b=R.fp,c=R.all;if(!a||!b||!c)return;
- const ID=LANG==='id',nm=(ID?{87:'angka pemerintah (~87)',50:'perkiraan IUCN sekitar 50'}:{87:'the government count (~87)',50:'the IUCN estimate of about 50'})[st.n0]||(ID?`${st.n0} badak`:`${st.n0} rhinos`);
- const ph=r=>ID?(r.above0?(r.below?`turun di bawah ${st.tgt} pada <em>${r.below}</em>`:`tetap di atas ${st.tgt}`):(r.rec?`mencapai ${st.tgt} pada <em>${r.rec}</em>`:`tidak mencapai ${st.tgt} hingga 2126`)):(r.above0?(r.below?`falls below ${st.tgt} in <em>${r.below}</em>`:`stays above ${st.tgt}`):(r.rec?`reaches ${st.tgt} in <em>${r.rec}</em>`:`doesn't reach ${st.tgt} by 2126`));
- let best=null;for(const s2 of STR){const r=R[s2.k];if(!r||r.above0||s2.k==='po')continue;if(r.rec&&(!best||r.rec<R[best.k].rec))best=s2}
- let h=ID?`Dari ${nm}: jika perburuan berlanjut ${st.poach===.07?'sekitar 7% per tahun (laju perburuan 2019–2023)':Math.round(st.poach*100)+'% per tahun'}, populasi ${ph(a)} dan berakhir sekitar <em>${a.med[100]}</em> pada 2126 (risiko kepunahan ${pct(a.pExt)}). Dengan perlindungan penuh saja, populasi ${ph(b)}; dengan tambahan pemulihan habitat dan penangkaran mulai ${st.start}, populasi ${ph(c)}.`:`Starting from ${nm}: if poaching continues at ${Math.round(st.poach*100)}% a year, the population ${ph(a)} and ends near <em>${a.med[100]}</em> in 2126 (extinction risk ${pct(a.pExt)}). With full protection alone it ${ph(b)}; adding habitat recovery and captive breeding from ${st.start}, it ${ph(c)}.`;
- if(best)h+=ID?` Jalur tercepat: <em>${best.name.toLowerCase()}</em>.`:` Fastest route here: <em>${best.name.toLowerCase()}</em>.`;
- const f=first100();
- if(st.n0>=100){const dn=r=>{const i=r.med.findIndex(v=>v<100);return i>0?2026+i:null},yb=dn(b),yc=dn(c);
-  if(!yb&&!yc){h+=ID?' Populasi sudah dimulai pada 100 badak atau lebih dan tetap di atas 100 dengan perlindungan penuh, jadi reintroduksi ke habitat kedua dapat dipertimbangkan sekarang.':' The population already starts at 100 or more and stays above 100 with full protection, so reintroduction to a second habitat could be considered now.';$('head').innerHTML=h;return}
-  h+=ID?` Populasi sudah dimulai pada 100 badak atau lebih, jadi reintroduksi ke habitat kedua dapat dipertimbangkan sekarang. ${yb?`Dengan perlindungan penuh saja, jumlahnya turun di bawah 100 pada <em>${yb}</em>`:'Dengan perlindungan penuh saja, jumlahnya tetap di atas 100'}${yc?`; dengan habitat dan penangkaran, turun di bawah 100 pada <em>${yc}</em>.`:'; dengan habitat dan penangkaran, tetap di atas 100.'}`
-   :` The population already starts at 100 or more, so reintroduction to a second habitat could be considered now. ${yb?`With full protection alone it falls below 100 in <em>${yb}</em>`:'With full protection alone it stays above 100'}${yc?`; with habitat and captive breeding, it falls below 100 in <em>${yc}</em>.`:'; with habitat and captive breeding, it stays above 100.'}`;
-  $('head').innerHTML=h;return}
- h+=ID?(f?` Jumlah pertama kali mencapai 100 pada <em>${f.yr}</em> (${f.name.toLowerCase()}): saat itulah reintroduksi ke habitat kedua menjadi memungkinkan.`:` Tidak ada strategi yang mencapai 100 badak dengan pengaturan ini, sehingga reintroduksi ke habitat kedua belum memungkinkan.`):f?` Numbers first reach 100 in <em>${f.yr}</em> (${f.name.toLowerCase()}): the point at which reintroduction to a second habitat becomes possible.`:` No strategy reaches 100 rhinos under these settings, so reintroduction to a second habitat isn't yet possible.`;
- $('head').innerHTML=h;
-}
-const SWY=[2027,2028,2030,2032,2035,2040];
-function swRows(){const run_=T('running…','berjalan…');
- $('sw').innerHTML=SWY.map(y=>{const r=SW[String(y)];if(!r)return `<tr><td>${y}</td><td colspan="6" class="note">${run_}</td></tr>`;
-  return `<tr><td>${y}${y==st.start?' <span class="note">'+T('(selected)','(dipilih)')+'</span>':''}</td><td class="num" data-l="${T('Founders moved','Pendiri dipindahkan')}">${f1(r.founders)} ${T('of','dari')} ${st.fH1+st.fH2+st.fM}</td><td class="num" data-l="${T('Reaches target','Mencapai target')}">${recTxt(r)}</td><td class="num" data-l="Median 2050">${r.med[24]}</td><td class="num" data-l="${T('JRSCA group alive','Kelompok JRSCA bertahan')}">${pct(1-r.pS2ext)}</td><td class="num" data-l="${T('Haplotype 2 kept','Haplotipe 2 bertahan')}">${pct(r.pH2)}</td><td class="num" data-l="${T('Extinction risk','Risiko kepunahan')}">${pct(r.pExt)}</td></tr>`}).join('')}
-function swNote(){if(!SWdone){$('swnote').textContent='';return}
-  const ys=SWY,S=SW;const rs=ys.map(y=>[y,S[String(y)]]).filter(([y,r])=>r&&r.rec&&!r.above0);const ref=R.hb;
-  if(!rs.length){$('swnote').textContent=S[ys[0]]&&S[ys[0]].above0?T('The population starts above the target, so the start year mainly changes how much JRSCA adds.','Populasi awal sudah di atas target, sehingga tahun mulai terutama mengubah seberapa besar kontribusi JRSCA.'):T('No start year reaches the target by 2126 with these settings.','Tidak ada tahun mulai yang mencapai target hingga 2126 dengan pengaturan ini.');return}
-  rs.sort((p,q)=>p[1].rec-q[1].rec||p[0]-q[0]);const [by,br]=rs[0];const mx=Math.max(...rs.map(x=>x[1].rec));const rng=br.rec+(mx>br.rec?'–'+mx:'');
-  let t=rs.length===ys.length&&mx-br.rec<=2?T(`Start year makes little difference here: the target is reached in ${rng} whichever year captive breeding starts.`,`Tahun mulai hampir tidak berpengaruh di sini: target tercapai pada ${rng} kapan pun penangkaran dimulai.`):T(`Earliest recovery with these settings: start in ${by} (target reached in ${br.rec}).`,`Pemulihan tercepat dengan pengaturan ini: mulai pada ${by} (target tercapai pada ${br.rec}).`);
-  if(ref&&ref.rec&&ref.rec<br.rec)t+=T(` Habitat recovery without captive breeding gets there sooner (${ref.rec}): at this population size, removing founders slows Ujung Kulon's own recovery.`,` Pemulihan habitat tanpa penangkaran mencapainya lebih cepat (${ref.rec}): pada ukuran populasi ini, mengambil individu pendiri memperlambat pemulihan Ujung Kulon sendiri.`);
-  $('swnote').textContent=t}
-function sweep(){
- const list=SWY.map(y=>({key:String(y),P:params('all',y),seed:15}));
- SW={};SWdone=false;swRows();swNote();
- runJobs(list,200,st.tgt,(k,s)=>{SW[k]=s;swRows()},()=>{SWdone=true;swNote()});
-}
-// ---------- language
-const EN={};document.querySelectorAll('[data-t]').forEach(el=>EN[el.dataset.t]=el.innerHTML);
-function setLang(l){LANG=l;try{localStorage.setItem('jrLang',l)}catch(e){}
- document.documentElement.lang=l;document.title=T('Javan rhino recovery simulation','Simulasi pemulihan badak jawa');
- document.querySelectorAll('[data-t]').forEach(el=>{const k=el.dataset.t;el.innerHTML=l==='id'?window.I18N[k]:EN[k]});
- const lb=$('langbtn');lb.innerHTML=l==='id'?'<span class="lf">English</span><span class="ls">English</span>':'<span class="lf">Bahasa Indonesia</span><span class="ls">Bahasa</span>';lb.lang=l==='id'?'en':'id';
- lbl();drawTL();drawChecks();segs();legend();draw();table();
- if(DONE)headline();else{$('head').textContent=T('Running the model…','Menjalankan model…');if($('busy').textContent)$('busy').textContent=T('running…','berjalan…')}
- if(DONE){if(Object.keys(SW).length)swRows();swNote()}else $('sw').innerHTML='<tr><td colspan="7" class="note">'+T('Waiting for the main run…','Menunggu simulasi utama…')+'</td></tr>';
-}
-$('langbtn').addEventListener('click',()=>setLang(LANG==='id'?'en':'id'));
-if(LANG==='id')setLang('id');
-run();
+function siteCard(){const el=$('site');if(st.hover==null){el.innerHTML=st.plc==='pick'?'Tap test sites on the map to add them to your scenario.':'Hover or tap a test site to see what mining only there would cost.';return}
+ const s=D.sites[st.hover],r=s.r[st.rate],e=st.one[st.hover],r0=r;
+ el.innerHTML=`<h3 style="margin-bottom:6px">Hypothetical test site ${st.hover} · ${s.d} km from park${siteDepth(s)?` · water ~${Math.round(siteDepth(s))} m deep`:''}</h3>Mining only here at ${st.rate} ton/day (${$('season').querySelector('[aria-pressed=true]').textContent.toLowerCase()}): park waters above 5 mg/L ${e.pk5} ha (above 20: ${e.pk20} ha).<br><b>${fmtRp(e.rp)} per year</b> · ${fmtRp(e.rp*D.params.AF)} over 25 years.${st.combo.has(st.hover)?' <b>Mined in this scenario.</b>':''}${st.plc==='pick'?' Tap to '+(st.pick.has(st.hover)?'remove it from':'add it to')+' your pick.':''}`}
+
+const fitHH=()=>{const h=document.querySelector('header.strip').offsetHeight,m=parseFloat(getComputedStyle(document.querySelector('main.band')).paddingTop)||0;document.documentElement.style.setProperty('--hh',(h+m+24)+'px')};fitHH();addEventListener('resize',fitHH);document.fonts&&document.fonts.ready.then(fitHH);
+const cvs=$('cv');let drag=null;
+cvs.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY,ox:st.ox,oy:st.oy};cvs.setPointerCapture(e.pointerId)});
+cvs.addEventListener('pointerup',e=>{const moved=drag&&Math.hypot(e.clientX-drag.x,e.clientY-drag.y)>4;drag=null;if(!moved){const b=pick(e);if(b!=null&&st.plc==='pick'&&st.n!=='all'){st.pick.has(b)?st.pick.delete(b):st.pick.add(b);upd()}}});
+cvs.addEventListener('pointermove',e=>{if(!D)return;if(drag){st.ox=drag.ox+e.clientX-drag.x;st.oy=drag.oy+e.clientY-drag.y;draw();return}pick(e)});
+function pick(e){if(!D)return;
+ const b=cvs.getBoundingClientRect(),mx=e.clientX-b.left,my=e.clientY-b.top,v=view();let best=null,bd=14;
+ if(st.lay.sites)D.sites.forEach((s,i)=>{const[p,q]=P(v,s.x,s.y),dd=Math.hypot(p-mx,q-my);if(dd<bd){bd=dd;best=i}});
+ const tip=$('tip');if(best!=null){const s=D.sites[best],r=s.r[st.rate];tip.style.display='block';tip.style.left=Math.min(mx+12,b.width-250)+'px';tip.style.top=(my+12)+'px';
+  const dd=siteDepth(s);tip.innerHTML=`Hypothetical test site ${best} · ${s.d} km out${dd?` · ~${Math.round(dd)} m deep`:''}<br>Alone: park waters above 5 mg/L ${st.one[best].pk5} ha${st.combo.has(best)?'<br><b>Mined in this scenario</b>':''}`}else tip.style.display='none';
+ if(best!==st.hover&&best!=null){st.hover=best;siteCard();draw()}return best}
+cvs.addEventListener('wheel',e=>{e.preventDefault();zoomAt(e.deltaY<0?1.25:0.8,e.offsetX,e.offsetY)},{passive:false});
+function zoomAt(f,mx,my){const v=view(),nk=Math.max(1,Math.min(8,st.k*f)),r=nk/st.k;st.ox=mx-(mx-v.w/2-st.ox)*r-v.w/2;st.oy=my-(my-v.h/2-st.oy)*r-v.h/2;st.k=nk;if(nk===1){st.ox=0;st.oy=0}draw()}
+$('zin').onclick=()=>{const v=view();zoomAt(1.4,v.w/2,v.h/2)};$('zout').onclick=()=>{const v=view();zoomAt(1/1.4,v.w/2,v.h/2)};$('zre').onclick=()=>{st.k=1;st.ox=0;st.oy=0;draw()};
+
+// ---- animated ocean currents (HYCOM GOFS 3.1 surface, seasonal means) ----
+let CU=null;fetch('currents.json').then(r=>r.json()).then(d=>{CU=d}).catch(()=>{});
+const cc=$('curcv'),cx=cc.getContext('2d'),RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+let PT=[],lastV='',seaP=null,curS='NW',cyc=0,lbl='',still=0;
+function vel(x,y){const g=CU,fx=(x-g.x0)/g.dx,fy=(y-g.y0)/g.dy,i=Math.floor(fx),j=Math.floor(fy);if(i<0||j<0||i>=g.nx-1||j>=g.ny-1)return null;
+ const S=g.s[curS],U=S.u,V=S.v,a=fx-i,b=fy-j,k=j*g.nx+i,q=[k,k+1,k+g.nx,k+g.nx+1];for(const t of q)if(U[t]==null)return null;
+ const w=[(1-a)*(1-b),a*(1-b),(1-a)*b,a*b];let u=0,v=0;for(let n=0;n<4;n++){u+=U[q[n]]*w[n];v+=V[q[n]]*w[n]}return[u,v]}
+function spawn(p){for(let n=0;n<30;n++){const x=Math.random()*W,y=Math.random()*Hh;if(vel(x,y)){p.x=x;p.y=y;p.age=0;p.life=50+Math.random()*90;return}}p.age=1e9}
+function seaPath(v){const P2=new Path2D();P2.rect(0,0,v.w,v.h);P2.addPath(seaRings(v,D.geo.land));const L2=new Path2D();L2.addPath(seaRings(v,D.geo.parkland));return[P2,L2]}
+function seaRings(v,R){const Q=new Path2D();for(const r of R){r.forEach(([x,y],i)=>{const[p,q]=P(v,x,y);i?Q.lineTo(p,q):Q.moveTo(p,q)});Q.closePath()}return Q}
+function curTick(){requestAnimationFrame(curTick);
+ if(!CU||!D||!st.lay.cur){if(lastV){cx.setTransform(1,0,0,1,0,0);cx.clearRect(0,0,cc.width,cc.height);lastV='';$('curlbl').style.display='none'}return}
+ const v=view(),dpr=devicePixelRatio||1,key=[v.w,v.h,v.s.toFixed(6),v.x0.toFixed(1),v.y0.toFixed(1)].join();
+ if(key!==lastV){cc.width=v.w*dpr;cc.height=v.h*dpr;cx.setTransform(dpr,0,0,dpr,0,0);seaP=seaPath(v);lastV=key;still=0}
+ const s=st.curs;
+ if(s!==curS){curS=s;still=0;cx.clearRect(0,0,v.w,v.h)}
+ $('curlbl').style.display='flex';
+ if(!PT.length)for(let n=0;n<1800;n++){const p={};spawn(p);p.age=Math.random()*p.life;PT.push(p)}
+ if(RM&&still>60)return;still++;
+ cx.save();cx.globalCompositeOperation='destination-out';cx.fillStyle='rgba(0,0,0,.075)';cx.fillRect(0,0,v.w,v.h);cx.restore();
+ cx.save();cx.clip(seaP[0],'evenodd');cx.lineCap='round';
+ const K=140,bins=[[],[],[]];
+ for(const p of PT){const u=vel(p.x,p.y);if(!u||p.age++>p.life){spawn(p);continue}
+  const nx=p.x+u[0]*K,ny=p.y+u[1]*K,sp=Math.hypot(u[0],u[1]);const[a,b]=P(v,p.x,p.y),[c,d]=P(v,nx,ny);bins[sp<.06?0:sp<.2?1:2].push(a,b,c,d);p.x=nx;p.y=ny}
+ [['rgba(200,235,255,.45)',1],['rgba(225,245,255,.7)',1.3],['rgba(255,255,255,.9)',1.6]].forEach(([col,lw],i)=>{const B=bins[i];if(!B.length)return;cx.strokeStyle=col;cx.lineWidth=lw;cx.beginPath();for(let n=0;n<B.length;n+=4){cx.moveTo(B[n],B[n+1]);cx.lineTo(B[n+2],B[n+3])}cx.stroke()});
+ cx.restore();cx.save();cx.globalCompositeOperation='destination-out';cx.fillStyle='#000';cx.fill(seaP[1],'evenodd');cx.restore()}
+requestAnimationFrame(curTick);
+// ---- noise waves: rings spreading from each dredger to the edge of its 120 dB zone ----
+const nc=$('nzcv'),nx=nc.getContext('2d');let nzOn=false;
+function nzTick(t){requestAnimationFrame(nzTick);
+ const N=st.N;if(!N||!D){if(nzOn){nx.setTransform(1,0,0,1,0,0);nx.clearRect(0,0,nc.width,nc.height);nzOn=false}return}
+ const v=view(),dpr=devicePixelRatio||1;if(nc.width!==Math.round(v.w*dpr)||nc.height!==Math.round(v.h*dpr)){nc.width=Math.round(v.w*dpr);nc.height=Math.round(v.h*dpr)}
+ nx.setTransform(dpr,0,0,dpr,0,0);nx.globalCompositeOperation='source-over';nx.clearRect(0,0,v.w,v.h);nzOn=true;
+ const per=3600,K=4;
+ for(const g of N.rings){const[p,q]=P(v,g.x,g.y),R=g.r*v.s;
+  for(let k=0;k<K;k++){const ph=RM?(k+1)/K:((t/per)+k/K)%1,rad=Math.max(1,ph*R),al=RM?.6:(1-ph*.85)*(ph<.08?ph/.08:1);
+   nx.beginPath();nx.arc(p,q,rad,0,7);nx.lineWidth=10;nx.strokeStyle=`rgba(90,190,255,${al*.35})`;nx.stroke();
+   nx.beginPath();nx.arc(p,q,rad,0,7);nx.lineWidth=3;nx.strokeStyle=`rgba(225,248,255,${al})`;nx.stroke()}}
+ nx.globalCompositeOperation='destination-in';nx.imageSmoothingEnabled=true;const[a,b]=P(v,0,Hh);nx.drawImage(N.mask,a,b,W*v.s,Hh*v.s);nx.globalCompositeOperation='source-over'}
+requestAnimationFrame(nzTick);
 }
 </script>
 </body>
